@@ -1,0 +1,23 @@
+{
+  "name": "agc-scada-hub",
+  "version": "1.0.0",
+  "description": "AGC SCADA Hub — Al Gurg Automation and Controls PWA for requirements tracking, cost estimation, and execution management for SCADA engineers.",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . -l 5173",
+    "serve": "npx serve . -l 5173"
+  },
+  "keywords": [
+    "scada",
+    "pwa",
+    "automation",
+    "al-gurg",
+    "cost-estimation",
+    "kanban"
+  ],
+  "author": "Al Gurg Automation and Controls",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  }
+}

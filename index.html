@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>AGC SCADA Hub</title>
+<meta name="description" content="Al Gurg Controls SCADA Hub - requirements tracking, cost estimation, and execution management for SCADA engineers." />
+<meta name="theme-color" content="#0f172a" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div id="offline-banner" class="offline-banner hidden">⚡ Offline mode — changes are saved locally and will sync when the app is reopened online.</div>
+
+<header class="app-header">
+  <div class="brand">
+    <span class="brand-mark">AGC</span>
+    <div class="brand-text">
+      <h1>SCADA Hub</h1>
+      <p>Al Gurg Automation &amp; Controls</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <span id="sync-status" class="sync-status">● Saved locally</span>
+    <button id="export-btn" class="btn btn-ghost" title="Export all data as JSON">Export</button>
+    <button id="settings-btn" class="btn btn-ghost" title="Settings">⚙</button>
+  </div>
+</header>
+
+<nav class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+  <button class="tab-btn" data-tab="requirements">Requirements</button>
+  <button class="tab-btn" data-tab="estimation">Cost Estimation</button>
+  <button class="tab-btn" data-tab="execution">Execution Board</button>
+</nav>
+
+<main id="app-main">
+
+  <!-- DASHBOARD -->
+  <section class="tab-panel active" id="panel-dashboard">
+    <h2 class="panel-title">Project Overview</h2>
+    <div class="stat-grid" id="dashboard-stats"></div>
+    <div class="dash-grid">
+      <div class="card">
+        <h3>Open Requirements</h3>
+        <div id="dash-requirements-list" class="mini-list"></div>
+      </div>
+      <div class="card">
+        <h3>Execution Snapshot</h3>
+        <div id="dash-execution-snapshot" class="mini-list"></div>
+      </div>
+      <div class="card">
+        <h3>Recent Estimates</h3>
+        <div id="dash-estimates-list" class="mini-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS & STAKEHOLDER MATRIX -->
+  <section class="tab-panel" id="panel-requirements">
+    <div class="panel-header-row">
+      <h2 class="panel-title">Requirements &amp; Stakeholder Matrix</h2>
+      <button class="btn btn-primary" id="add-requirement-btn">+ New Requirement</button>
+    </div>
+
+    <div class="filter-row">
+      <input type="text" id="req-search" placeholder="Search requirements, projects, or stakeholders..." />
+      <select id="req-status-filter">
+        <option value="">All statuses</option>
+        <option value="Open">Open</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Blocked">Blocked</option>
+        <option value="Delivered">Delivered</option>
+      </select>
+    </div>
+
+    <div class="table-wrap">
+      <table class="data-table" id="requirements-table">
+        <thead>
+          <tr>
+            <th>Project</th>
+            <th>Requirement</th>
+            <th>Stakeholder</th>
+            <th>Role</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Due</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="requirements-tbody"></tbody>
+      </table>
+      <p class="empty-state hidden" id="requirements-empty">No requirements logged yet. Click "New Requirement" to add one.</p>
+    </div>
+  </section>
+
+  <!-- COST ESTIMATION ENGINE -->
+  <section class="tab-panel" id="panel-estimation">
+    <div class="panel-header-row">
+      <h2 class="panel-title">Cost Estimation Engine</h2>
+      <div>
+        <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
+        <button class="btn btn-primary" id="print-estimate-btn">Print / PDF</button>
+      </div>
+    </div>
+
+    <div class="est-layout">
+      <div class="card est-meta-card">
+        <label>Costing Sheet Name
+          <input type="text" id="est-name" placeholder="e.g. Al Ain WTP - SCADA Upgrade" />
+        </label>
+        <label>Client
+          <input type="text" id="est-client" placeholder="Client name" />
+        </label>
+        <label>Currency
+          <select id="est-currency">
+            <option value="AED">AED</option>
+            <option value="USD">USD</option>
+          </select>
+        </label>
+        <label>Engineering Hourly Rate
+          <input type="number" id="est-rate" value="150" min="0" step="1" />
+        </label>
+        <label>Contingency %
+          <input type="number" id="est-contingency" value="10" min="0" step="1" />
+        </label>
+        <label>Margin %
+          <input type="number" id="est-margin" value="15" min="0" step="1" />
+        </label>
+      </div>
+
+      <div class="card est-boq-card">
+        <div class="panel-header-row">
+          <h3>Bill of Quantities (BOQ)</h3>
+          <button class="btn btn-ghost btn-sm" id="add-boq-row">+ Add Line Item</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="boq-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Qty</th>
+                <th>Unit</th>
+                <th>Unit Cost</th>
+                <th>Line Total</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="boq-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="eng-hours-row">
+          <label>Engineering Hours (Design/Programming/FAT/SAT)
+            <input type="number" id="est-eng-hours" value="0" min="0" step="1" />
+          </label>
+        </div>
+
+        <div class="cost-summary" id="cost-summary"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Saved Costing Sheets</h3>
+      <div class="table-wrap">
+        <table class="data-table" id="estimates-table">
+          <thead>
+            <tr><th>Name</th><th>Client</th><th>Grand Total</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody id="estimates-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXECUTION BOARD -->
+  <section class="tab-panel" id="panel-execution">
+    <div class="panel-header-row">
+      <h2 class="panel-title">Execution Board</h2>
+      <button class="btn btn-primary" id="add-task-btn">+ New Task</button>
+    </div>
+    <p class="hint-text">Drag cards between phases, or use the arrows on mobile. Assign owners across Design, Programming, FAT, Commissioning &amp; SAT teams.</p>
+    <div class="kanban-board" id="kanban-board"></div>
+  </section>
+
+</main>
+
+<footer class="app-footer">
+  <p><strong>Al Gurg Automation and Controls</strong> — Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE</p>
+  <p class="footer-sub">AGC SCADA Hub v1.0 · Works offline · Data stored locally on this device</p>
+</footer>
+
+<!-- Generic Modal -->
+<div class="modal-overlay hidden" id="modal-overlay">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Title</h3>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
