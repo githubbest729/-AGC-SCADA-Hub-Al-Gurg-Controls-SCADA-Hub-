@@ -1,26 +1,53 @@
 /* =========================================================
    AGC SCADA Hub — app.js
-   Vanilla JS SPA logic: tabs, requirements matrix,
-   cost estimation engine, execution kanban board,
-   localStorage persistence, offline handling.
+   Vanilla JS SPA logic (Upgraded to IndexedDB)
+   Tabs, requirements matrix, cost estimation engine, 
+   execution kanban board, offline handling.
    ========================================================= */
 
-(() => {
+document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
 
-  /* ---------------- Storage Keys ---------------- */
-  const STORE_KEY = "agc_scada_hub_data_v1";
+  /* ---------------- 1. Initialize DB & Seed ---------------- */
+  await DB.init();
 
-  /* ---------------- Default Data Model ---------------- */
-  function defaultData() {
-    return {
-      requirements: [],
-      estimates: [],      // saved costing sheets
-      currentEstimate: newEstimate(),
-      tasks: [],
-      meta: { lastSaved: null }
-    };
+  const projects = await DB.getAll("projects");
+  if (projects.length === 0) {
+    try {
+      const response = await fetch("./data/sample-project.json");
+      if (response.ok) {
+        const sampleData = await response.json();
+        await DB.seedData(sampleData);
+      }
+    } catch (error) {
+      console.warn("Could not load sample data", error);
+    }
   }
+
+  /* ---------------- 2. State & Database Sync ---------------- */
+  const DATA = {
+    requirements: [],
+    tasks: [],
+    estimates: [],
+    currentEstimate: newEstimate()
+  };
+
+  // Load draft estimate from local storage (keeps in-progress work safe if you refresh)
+  const draft = localStorage.getItem("agc_draft_estimate");
+  if (draft) {
+    try {
+      DATA.currentEstimate = Object.assign(newEstimate(), JSON.parse(draft));
+    } catch(e) {}
+  }
+
+  // Master function to sync local state with IndexedDB
+  async function refreshData() {
+    DATA.requirements = await DB.getAll("requirements");
+    DATA.tasks = await DB.getAll("kanban");
+    DATA.estimates = await DB.getAll("estimates");
+  }
+
+  await refreshData(); // Initial load
 
   function newEstimate() {
     return {
@@ -37,39 +64,43 @@
     };
   }
 
+  // Save in-progress estimate to localStorage (drafts don't need IndexedDB yet)
+  function saveDraft() {
+    try {
+      localStorage.setItem("agc_draft_estimate", JSON.stringify(DATA.currentEstimate));
+      flashSyncStatus(true);
+    } catch (e) {
+      flashSyncStatus(false);
+    }
+  }
+
   const PHASES = ["Design", "Programming", "FAT", "Commissioning", "SAT"];
   const REQ_STATUSES = ["Open", "In Progress", "Blocked", "Delivered"];
 
-  // Fallback lists used until data/boq-catalog.json has loaded (or if it
-  // fails to load, e.g. first-ever offline load before the SW has cached it).
   const FALLBACK_CATEGORIES = ["PLC", "SCADA Tags", "I/O Module", "Network Switch", "HMI Panel", "Server/Workstation", "Cabling", "Software License", "Other"];
   const FALLBACK_UNITS = ["pcs", "tags", "pts", "m", "lot", "hrs"];
 
-  /* ---------------- BOQ Catalog (data/boq-catalog.json) ---------------- */
+  /* ---------------- BOQ Catalog ---------------- */
   const CATALOG_CACHE_KEY = "agc_scada_hub_catalog_cache_v1";
-  let CATALOG = null; // populated by loadCatalog()
+  let CATALOG = null;
 
   async function loadCatalog() {
     try {
       const res = await fetch("data/boq-catalog.json", { cache: "no-cache" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       CATALOG = await res.json();
-      // Cache a copy so the catalog is still usable fully offline even
-      // before the service worker has taken over fetch handling.
-      try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(CATALOG)); } catch (e) { /* ignore quota errors */ }
+      try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(CATALOG)); } catch (e) {}
     } catch (err) {
       console.warn("Could not fetch data/boq-catalog.json, trying local cache.", err);
       try {
         const cached = localStorage.getItem(CATALOG_CACHE_KEY);
         if (cached) CATALOG = JSON.parse(cached);
-      } catch (e) { /* ignore */ }
+      } catch (e) {}
     }
   }
 
   function getCategoryLabels() {
-    if (CATALOG && Array.isArray(CATALOG.categories) && CATALOG.categories.length) {
-      return CATALOG.categories.map(c => c.label);
-    }
+    if (CATALOG && Array.isArray(CATALOG.categories) && CATALOG.categories.length) return CATALOG.categories.map(c => c.label);
     return FALLBACK_CATEGORIES;
   }
 
@@ -90,46 +121,11 @@
   }
 
   function getEngineeringRates() {
-    if (CATALOG && CATALOG.engineeringRates && Array.isArray(CATALOG.engineeringRates.rates)) {
-      return CATALOG.engineeringRates.rates;
-    }
+    if (CATALOG && CATALOG.engineeringRates && Array.isArray(CATALOG.engineeringRates.rates)) return CATALOG.engineeringRates.rates;
     return [];
   }
 
-  /* ---------------- State ---------------- */
-  let DATA = loadData();
-
-  function loadData() {
-    try {
-      const raw = localStorage.getItem(STORE_KEY);
-      if (!raw) return defaultData();
-      const parsed = JSON.parse(raw);
-      // merge with defaults to protect against missing keys after updates
-      const d = defaultData();
-      return Object.assign(d, parsed, {
-        currentEstimate: Object.assign(newEstimate(), parsed.currentEstimate || {})
-      });
-    } catch (e) {
-      console.error("Failed to load local data, starting fresh.", e);
-      return defaultData();
-    }
-  }
-
-  function saveData() {
-    DATA.meta.lastSaved = new Date().toISOString();
-    try {
-      localStorage.setItem(STORE_KEY, JSON.stringify(DATA));
-      flashSyncStatus(true);
-    } catch (e) {
-      console.error("Save failed", e);
-      flashSyncStatus(false);
-    }
-  }
-
-  function uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  }
-
+  /* ---------------- Utilities ---------------- */
   function fmtMoney(n, currency) {
     const val = isFinite(n) ? n : 0;
     return `${currency || DATA.currentEstimate.currency} ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -141,6 +137,11 @@
     if (isNaN(d)) return iso;
     return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
   }
+
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+  function escapeAttr(str) { return escapeHtml(str); }
 
   /* ---------------- Sync / Offline status ---------------- */
   const syncStatusEl = document.getElementById("sync-status");
@@ -227,21 +228,18 @@
       statGrid.appendChild(box);
     });
 
-    // Open requirements mini list
     const reqList = document.getElementById("dash-requirements-list");
     const openList = DATA.requirements.filter(r => r.status !== "Delivered").slice(0, 6);
     reqList.innerHTML = openList.length
       ? openList.map(r => `<div class="mini-row"><span>${escapeHtml(r.title)}</span><span class="muted">${r.status}</span></div>`).join("")
       : `<p class="muted">No open requirements.</p>`;
 
-    // Execution snapshot
     const execSnap = document.getElementById("dash-execution-snapshot");
     execSnap.innerHTML = PHASES.map(p => {
       const count = DATA.tasks.filter(t => t.phase === p).length;
       return `<div class="mini-row"><span>${p}</span><span class="muted">${count} task${count === 1 ? "" : "s"}</span></div>`;
     }).join("");
 
-    // Recent estimates
     const estList = document.getElementById("dash-estimates-list");
     const recent = [...DATA.estimates].sort((a, b) => new Date(b.savedAt) - new Date(a.savedAt)).slice(0, 5);
     estList.innerHTML = recent.length
@@ -262,12 +260,7 @@
   reqStatusFilter.addEventListener("change", renderRequirements);
 
   function statusBadgeClass(status) {
-    return {
-      "Open": "badge-open",
-      "In Progress": "badge-progress",
-      "Blocked": "badge-blocked",
-      "Delivered": "badge-delivered"
-    }[status] || "badge-open";
+    return { "Open": "badge-open", "In Progress": "badge-progress", "Blocked": "badge-blocked", "Delivered": "badge-delivered" }[status] || "badge-open";
   }
   function priorityBadgeClass(p) {
     return { High: "badge-high", Medium: "badge-medium", Low: "badge-low" }[p] || "badge-medium";
@@ -303,13 +296,13 @@
       reqTbody.appendChild(tr);
     });
 
-    reqTbody.querySelectorAll("[data-edit]").forEach(b =>
-      b.addEventListener("click", () => openRequirementModal(b.dataset.edit)));
+    reqTbody.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => openRequirementModal(b.dataset.edit)));
     reqTbody.querySelectorAll("[data-del]").forEach(b =>
-      b.addEventListener("click", () => {
+      b.addEventListener("click", async () => {
         if (confirm("Delete this requirement?")) {
-          DATA.requirements = DATA.requirements.filter(r => r.id !== b.dataset.del);
-          saveData(); renderRequirements();
+          await DB.delete("requirements", b.dataset.del);
+          await refreshData();
+          renderRequirements();
         }
       }));
   }
@@ -324,8 +317,7 @@
       <label>Stakeholder Name<input type="text" id="f-stakeholder" value="${escapeAttr(r.stakeholder)}" placeholder="e.g. Ahmed Al Farsi"/></label>
       <label>Stakeholder Role
         <select id="f-role">
-          ${["Project Manager","Control System Engineer","Client","Estimation Team","SCADA Engineer","Other"].map(role =>
-            `<option ${r.role === role ? "selected" : ""}>${role}</option>`).join("")}
+          ${["Project Manager","Control System Engineer","Client","Estimation Team","SCADA Engineer","Other"].map(role => `<option ${r.role === role ? "selected" : ""}>${role}</option>`).join("")}
         </select>
       </label>
       <label>Priority
@@ -348,11 +340,12 @@
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
         {
-          label: "Save", className: "btn btn-primary", onClick: () => {
+          label: "Save", className: "btn btn-primary", onClick: async () => {
             const title = document.getElementById("f-title").value.trim();
             if (!title) { alert("Requirement description is required."); return; }
+            
             const updated = {
-              id: r.id || uid(),
+              id: r.id || crypto.randomUUID(),
               project: document.getElementById("f-project").value.trim(),
               title,
               stakeholder: document.getElementById("f-stakeholder").value.trim(),
@@ -362,15 +355,12 @@
               due: document.getElementById("f-due").value,
               notes: document.getElementById("f-notes").value.trim()
             };
-            if (existing) {
-              const idx = DATA.requirements.findIndex(x => x.id === r.id);
-              DATA.requirements[idx] = updated;
-            } else {
-              DATA.requirements.push(updated);
-            }
-            saveData();
+            
+            await DB.put("requirements", updated);
+            await refreshData();
             closeModal();
             renderRequirements();
+            flashSyncStatus(true);
           }
         }
       ]
@@ -393,11 +383,10 @@
   const estimatesTbody = document.getElementById("estimates-tbody");
 
   [estNameEl, estClientEl, estCurrencyEl, estRateEl, estContingencyEl, estMarginEl, estEngHoursEl].forEach(el => {
-    el.addEventListener("input", () => { syncEstimateFromForm(); renderCostSummary(); saveData(); });
-    el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveData(); });
+    el.addEventListener("input", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
+    el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
   });
 
-  // Picking an Engineering Role from the catalog auto-fills the hourly rate field
   estRoleEl.addEventListener("change", () => {
     const rates = getEngineeringRates();
     const match = rates.find(r => r.role === estRoleEl.value);
@@ -405,7 +394,7 @@
       estRateEl.value = match.hourlyRate;
       syncEstimateFromForm();
       renderCostSummary();
-      saveData();
+      saveDraft();
     }
   });
 
@@ -424,18 +413,18 @@
   document.getElementById("add-boq-row").addEventListener("click", () => {
     const defaultCategory = getCategoryLabels()[0];
     DATA.currentEstimate.boq.push({
-      id: uid(), category: defaultCategory, catalogSku: "",
+      id: crypto.randomUUID(), category: defaultCategory, catalogSku: "",
       description: "", qty: 1, unit: getUnitsForCategory(defaultCategory)[0], unitCost: 0
     });
-    saveData();
+    saveDraft();
     renderBoqTable();
     renderCostSummary();
   });
 
   document.getElementById("new-estimate-btn").addEventListener("click", () => {
-    if (DATA.currentEstimate.boq.length && !confirm("Start a new blank costing sheet? Unsaved changes to the current sheet will be lost unless already saved.")) return;
+    if (DATA.currentEstimate.boq.length && !confirm("Start a new blank costing sheet? Unsaved changes will be lost.")) return;
     DATA.currentEstimate = newEstimate();
-    saveData();
+    saveDraft();
     renderEstimation();
   });
 
@@ -470,6 +459,7 @@
     const boq = DATA.currentEstimate.boq;
     const categories = getCategoryLabels();
     boqTbody.innerHTML = "";
+    
     boq.forEach(item => {
       const catalogItems = getCatalogItemsForCategory(item.category);
       const units = getUnitsForCategory(item.category);
@@ -484,7 +474,7 @@
         <td>
           <select data-field="catalogSku" data-id="${item.id}" ${catalogItems.length ? "" : "disabled"}>
             <option value="">${catalogItems.length ? "— Select catalog item —" : "No catalog items"}</option>
-            ${catalogItems.map(ci => `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku===ci.sku?"selected":""}>${escapeHtml(ci.vendor)} — ${escapeHtml(ci.description)}</option>`).join("")}
+            ${catalogItems.map(ci => `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku===ci.sku?"selected":""}>${escapeHtml(ci.vendor)} —${escapeHtml(ci.description)}</option>`).join("")}
           </select>
         </td>
         <td><input type="text" class="boq-input" style="min-width:140px" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description / tag name"/></td>
@@ -501,9 +491,7 @@
       boqTbody.appendChild(tr);
     });
 
-    boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el => {
-      el.addEventListener("change", handleBoqCatalogSelect);
-    });
+    boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el => el.addEventListener("change", handleBoqCatalogSelect));
     boqTbody.querySelectorAll("[data-field]:not([data-field='catalogSku'])").forEach(el => {
       el.addEventListener("input", handleBoqFieldChange);
       el.addEventListener("change", handleBoqFieldChange);
@@ -511,31 +499,23 @@
     boqTbody.querySelectorAll("[data-del-boq]").forEach(b =>
       b.addEventListener("click", () => {
         DATA.currentEstimate.boq = DATA.currentEstimate.boq.filter(i => i.id !== b.dataset.delBoq);
-        saveData();
+        saveDraft();
         renderBoqTable();
         renderCostSummary();
       }));
   }
 
-  /**
-   * When a BOQ row's Category dropdown changes, re-render so the
-   * Catalog Item + Unit dropdowns refresh to match the new category.
-   */
   function handleBoqCategoryChange(id, newCategory) {
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
     item.category = newCategory;
     item.catalogSku = "";
     item.unit = getUnitsForCategory(newCategory)[0];
-    saveData();
+    saveDraft();
     renderBoqTable();
     renderCostSummary();
   }
 
-  /**
-   * When a catalog item is picked from the "Catalog Item" dropdown,
-   * auto-fill description and unit cost from data/boq-catalog.json.
-   */
   function handleBoqCatalogSelect(e) {
     const id = e.target.dataset.id;
     const sku = e.target.value;
@@ -551,7 +531,7 @@
         item.unitCost = Number(match.unitCost) || 0;
       }
     }
-    saveData();
+    saveDraft();
     renderBoqTable();
     renderCostSummary();
   }
@@ -572,7 +552,7 @@
     } else {
       item[field] = e.target.value;
     }
-    saveData();
+    saveDraft();
     renderBoqTable();
     renderCostSummary();
   }
@@ -587,27 +567,25 @@
       <div class="row"><span>Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
       <div class="row"><span>Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
       <div class="row grand-total"><span>Grand Total</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
-      <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:10px;">💾 Save Costing Sheet</button>
+      <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:10px;">💾 Save Costing Sheet to Database</button>
     `;
     document.getElementById("save-estimate-btn").addEventListener("click", saveCurrentEstimate);
   }
 
-  function saveCurrentEstimate() {
+  async function saveCurrentEstimate() {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
     if (!e.name.trim()) { alert("Please name this costing sheet before saving."); return; }
     e.savedAt = new Date().toISOString();
-    if (!e.id) e.id = uid();
+    if (!e.id) e.id = crypto.randomUUID();
 
-    const idx = DATA.estimates.findIndex(x => x.id === e.id);
     const clone = JSON.parse(JSON.stringify(e));
-    if (idx >= 0) DATA.estimates[idx] = clone;
-    else DATA.estimates.push(clone);
-
-    saveData();
+    await DB.put("estimates", clone); // Save to IndexedDB
+    await refreshData();
+    
     renderEstimatesTable();
     renderDashboard();
-    alert("Costing sheet saved.");
+    alert("Costing sheet saved to database.");
   }
 
   function renderEstimatesTable() {
@@ -627,20 +605,22 @@
       `;
       estimatesTbody.appendChild(tr);
     });
+    
     estimatesTbody.querySelectorAll("[data-load]").forEach(b =>
       b.addEventListener("click", () => {
         const found = DATA.estimates.find(x => x.id === b.dataset.load);
         if (found) {
           DATA.currentEstimate = JSON.parse(JSON.stringify(found));
-          saveData();
+          saveDraft();
           renderEstimation();
         }
       }));
+      
     estimatesTbody.querySelectorAll("[data-del-est]").forEach(b =>
-      b.addEventListener("click", () => {
+      b.addEventListener("click", async () => {
         if (confirm("Delete this saved costing sheet?")) {
-          DATA.estimates = DATA.estimates.filter(x => x.id !== b.dataset.delEst);
-          saveData();
+          await DB.delete("estimates", b.dataset.delEst); // Delete from IndexedDB
+          await refreshData();
           renderEstimatesTable();
           renderDashboard();
         }
@@ -666,7 +646,6 @@
      EXECUTION BOARD (Kanban)
      ========================================================= */
   const kanbanBoard = document.getElementById("kanban-board");
-
   document.getElementById("add-task-btn").addEventListener("click", () => openTaskModal());
 
   function openTaskModal(id) {
@@ -679,8 +658,7 @@
       <label>Owner<input type="text" id="k-owner" value="${escapeAttr(t.owner)}" placeholder="Assigned engineer"/></label>
       <label>Team
         <select id="k-team">
-          ${["Design Team","Programming Team","Panel Shop","Commissioning Team","Client Team","QA/FAT Team"].map(tm =>
-            `<option ${t.team===tm?"selected":""}>${tm}</option>`).join("")}
+          ${["Design Team","Programming Team","Panel Shop","Commissioning Team","Client Team","QA/FAT Team"].map(tm => `<option ${t.team===tm?"selected":""}>${tm}</option>`).join("")}
         </select>
       </label>
       <label>Phase
@@ -697,11 +675,12 @@
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
         {
-          label: "Save", className: "btn btn-primary", onClick: () => {
+          label: "Save", className: "btn btn-primary", onClick: async () => {
             const title = document.getElementById("k-title").value.trim();
             if (!title) { alert("Task title is required."); return; }
+            
             const updated = {
-              id: t.id || uid(),
+              id: t.id || crypto.randomUUID(),
               title,
               project: document.getElementById("k-project").value.trim(),
               owner: document.getElementById("k-owner").value.trim(),
@@ -709,29 +688,28 @@
               phase: document.getElementById("k-phase").value,
               notes: document.getElementById("k-notes").value.trim()
             };
-            if (existing) {
-              const idx = DATA.tasks.findIndex(x => x.id === t.id);
-              DATA.tasks[idx] = updated;
-            } else {
-              DATA.tasks.push(updated);
-            }
-            saveData();
+            
+            await DB.put("kanban", updated); // Save to IndexedDB
+            await refreshData();
             closeModal();
             renderKanban();
+            flashSyncStatus(true);
           }
         }
       ]
     });
   }
 
-  function moveTask(taskId, direction) {
+  async function moveTask(taskId, direction) {
     const t = DATA.tasks.find(x => x.id === taskId);
     if (!t) return;
     const idx = PHASES.indexOf(t.phase);
     const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= PHASES.length) return;
+    
     t.phase = PHASES[newIdx];
-    saveData();
+    await DB.put("kanban", t); // Update in IndexedDB
+    await refreshData();
     renderKanban();
   }
 
@@ -779,10 +757,10 @@
         card.querySelector("[data-move-left]").addEventListener("click", () => moveTask(t.id, -1));
         card.querySelector("[data-move-right]").addEventListener("click", () => moveTask(t.id, 1));
         card.querySelector("[data-edit-task]").addEventListener("click", () => openTaskModal(t.id));
-        card.querySelector("[data-del-task]").addEventListener("click", () => {
+        card.querySelector("[data-del-task]").addEventListener("click", async () => {
           if (confirm("Delete this task?")) {
-            DATA.tasks = DATA.tasks.filter(x => x.id !== t.id);
-            saveData();
+            await DB.delete("kanban", t.id); // Delete from IndexedDB
+            await refreshData();
             renderKanban();
           }
         });
@@ -792,12 +770,17 @@
 
       col.addEventListener("dragover", (e) => { e.preventDefault(); col.classList.add("drag-over"); });
       col.addEventListener("dragleave", () => col.classList.remove("drag-over"));
-      col.addEventListener("drop", (e) => {
+      col.addEventListener("drop", async (e) => {
         e.preventDefault();
         col.classList.remove("drag-over");
         if (dragTaskId) {
           const t = DATA.tasks.find(x => x.id === dragTaskId);
-          if (t) { t.phase = phase; saveData(); renderKanban(); }
+          if (t) {
+            t.phase = phase;
+            await DB.put("kanban", t); // Update dropped task in DB
+            await refreshData();
+            renderKanban();
+          }
         }
       });
 
@@ -822,20 +805,27 @@
     openModal({
       title: "Settings & About",
       bodyHtml: `
-        <p><strong>AGC SCADA Hub</strong> — v1.0</p>
+        <p><strong>AGC SCADA Hub</strong> — v1.0 (IndexedDB Engine)</p>
         <p style="margin-top:8px;">Al Gurg Automation and Controls</p>
         <p style="color:var(--slate-400); font-size:0.8rem; margin-top:4px;">
           Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE
         </p>
-        <p style="margin-top:14px; font-size:0.85rem;">All data is stored locally on this device (localStorage) so the app works fully offline on-site. Use <em>Export</em> to back up or transfer your data.</p>
-        <button class="btn btn-danger" id="clear-data-btn" style="margin-top:14px;">Clear All Local Data</button>
+        <p style="margin-top:14px; font-size:0.85rem;">All data is stored locally on this device (IndexedDB) so the app works fully offline on-site. Use <em>Export</em> to back up or transfer your data.</p>
+        <button class="btn btn-danger" id="clear-data-btn" style="margin-top:14px;">Clear All Local Database Content</button>
       `,
       footerButtons: [{ label: "Close", className: "btn btn-primary", onClick: closeModal }]
     });
-    document.getElementById("clear-data-btn").addEventListener("click", () => {
-      if (confirm("This will permanently delete all locally stored data on this device. Continue?")) {
-        localStorage.removeItem(STORE_KEY);
-        DATA = defaultData();
+    
+    document.getElementById("clear-data-btn").addEventListener("click", async () => {
+      if (confirm("This will permanently delete all locally stored database records on this device. Continue?")) {
+        // Clear all IndexedDB stores safely
+        await Promise.all(DATA.requirements.map(r => DB.delete("requirements", r.id)));
+        await Promise.all(DATA.tasks.map(t => DB.delete("kanban", t.id)));
+        await Promise.all(DATA.estimates.map(e => DB.delete("estimates", e.id)));
+        localStorage.removeItem("agc_draft_estimate");
+        
+        DATA.currentEstimate = newEstimate();
+        await refreshData();
         closeModal();
         renderAll();
       }
@@ -845,30 +835,18 @@
   /* =========================================================
      INTEGRATIONS: CSV export, PDF generation, ClickUp/n8n sync
      ========================================================= */
-
-  // --- Cost Estimation → CSV (scripts/export.js) ---
   document.getElementById("export-csv-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    if (!e.boq.length) {
-      alert("Add at least one BOQ line item before exporting.");
-      return;
-    }
-    const totals = calcTotals(e);
-    window.AGC.Export.exportBoqToCsv(e, totals);
+    if (!e.boq.length) { alert("Add at least one BOQ line item before exporting."); return; }
+    window.AGC.Export.exportBoqToCsv(e, calcTotals(e));
   });
 
-  // --- Requirements & Stakeholder Matrix → branded PDF (scripts/pdf-generator.js) ---
   document.getElementById("generate-req-pdf-btn").addEventListener("click", () => {
-    if (!DATA.requirements.length) {
-      alert("Log at least one requirement before generating the specification PDF.");
-      return;
-    }
-    const tableEl = document.getElementById("requirements-table");
-    window.AGC.PDF.generateRequirementsPdf(tableEl, { preparedBy: "AGC SCADA Hub" });
+    if (!DATA.requirements.length) { alert("Log at least one requirement before generating the specification PDF."); return; }
+    window.AGC.PDF.generateRequirementsPdf(document.getElementById("requirements-table"), { preparedBy: "AGC SCADA Hub" });
   });
 
-  // --- Execution Board → ClickUp / n8n webhook sync (scripts/api.js) ---
   document.getElementById("webhook-settings-btn").addEventListener("click", openWebhookSettingsModal);
   document.getElementById("sync-clickup-btn").addEventListener("click", () => syncBoard("clickup"));
   document.getElementById("sync-n8n-btn").addEventListener("click", () => syncBoard("n8n"));
@@ -879,24 +857,18 @@
       title: "Webhook Settings",
       bodyHtml: `
         <p style="font-size:0.82rem; color:var(--slate-400); margin-bottom:12px;">
-          Paste in your ClickUp automation webhook and/or n8n Webhook node URL. These are stored only on this device and used to push Execution Board updates when you tap "Sync".
+          Paste in your ClickUp automation webhook and/or n8n Webhook node URL. These are stored only on this device.
         </p>
-        <label>ClickUp Webhook URL
-          <input type="text" id="w-clickup" value="${escapeAttr(cfg.clickup || "")}" placeholder="https://... (ClickUp automation / middleware endpoint)"/>
-        </label>
-        <label>n8n Webhook URL
-          <input type="text" id="w-n8n" value="${escapeAttr(cfg.n8n || "")}" placeholder="https://your-n8n-host/webhook/..."/>
-        </label>
+        <label>ClickUp Webhook URL<input type="text" id="w-clickup" value="${escapeAttr(cfg.clickup || "")}"/></label>
+        <label>n8n Webhook URL<input type="text" id="w-n8n" value="${escapeAttr(cfg.n8n || "")}"/></label>
       `,
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
-        {
-          label: "Save", className: "btn btn-primary", onClick: () => {
-            const newCfg = {
+        { label: "Save", className: "btn btn-primary", onClick: () => {
+            window.AGC.Api.saveWebhookConfig({
               clickup: document.getElementById("w-clickup").value.trim(),
               n8n: document.getElementById("w-n8n").value.trim()
-            };
-            window.AGC.Api.saveWebhookConfig(newCfg);
+            });
             closeModal();
           }
         }
@@ -905,56 +877,41 @@
   }
 
   async function syncBoard(target) {
-    if (!DATA.tasks.length) {
-      alert("No execution tasks to sync yet.");
-      return;
-    }
+    if (!DATA.tasks.length) { alert("No execution tasks to sync yet."); return; }
     const cfg = window.AGC.Api.getWebhookConfig();
     if (target === "clickup" && !cfg.clickup) { openWebhookSettingsModal(); return; }
     if (target === "n8n" && !cfg.n8n) { openWebhookSettingsModal(); return; }
 
     const btn = document.getElementById(target === "clickup" ? "sync-clickup-btn" : "sync-n8n-btn");
     const originalLabel = btn.textContent;
-    btn.disabled = true;
-    btn.textContent = "Syncing…";
+    btn.disabled = true; btn.textContent = "Syncing…";
 
     try {
       if (target === "n8n") {
         const result = await window.AGC.Api.syncFullBoardToN8n(DATA.tasks);
         reportSyncResult(result, `${DATA.tasks.length} task(s) sent to n8n.`);
       } else {
-        // ClickUp: send each task individually so it maps to one card per task
         let successCount = 0;
         for (const task of DATA.tasks) {
           const result = await window.AGC.Api.syncTaskToClickUp(task);
           if (result.ok) successCount++;
         }
         reportSyncResult(
-          { ok: successCount === DATA.tasks.length, error: successCount < DATA.tasks.length ? `${DATA.tasks.length - successCount} task(s) failed to sync.` : null },
+          { ok: successCount === DATA.tasks.length, error: successCount < DATA.tasks.length ? `${DATA.tasks.length - successCount} task(s) failed.` : null },
           `${successCount}/${DATA.tasks.length} task(s) synced to ClickUp.`
         );
       }
     } finally {
-      btn.disabled = false;
-      btn.textContent = originalLabel;
+      btn.disabled = false; btn.textContent = originalLabel;
     }
   }
 
   function reportSyncResult(result, successMessage) {
-    if (result.ok) {
-      alert(`✅ ${successMessage}`);
-    } else {
-      alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe and saved locally — you can retry once you're back online or the webhook is reachable.`);
-    }
+    if (result.ok) alert(`✅ ${successMessage}`);
+    else alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe locally.`);
   }
 
-  /* ---------------- Utilities ---------------- */
-  function escapeHtml(str) {
-    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-  }
-  function escapeAttr(str) { return escapeHtml(str); }
-
-  /* ---------------- Init ---------------- */
+  /* ---------------- Init Execution ---------------- */
   function renderAll() {
     renderDashboard();
     renderRequirements();
@@ -962,29 +919,17 @@
     renderKanban();
   }
 
-  async function init() {
-    updateOnlineStatus();
-
-    // Render immediately with fallback lists so the UI is usable at once,
-    // then re-render the estimation panel once the catalog has (hopefully) loaded.
-    renderAll();
-    await loadCatalog();
-    if (document.getElementById("panel-estimation").classList.contains("active")) {
-      renderEstimation();
-    } else {
-      // keep dropdowns fresh even if the user hasn't opened the tab yet
-      populateRoleDropdown();
-    }
-
-    // Register service worker for offline caching
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("service-worker.js").catch(err => {
-          console.warn("Service worker registration failed:", err);
-        });
-      });
-    }
+  updateOnlineStatus();
+  renderAll();
+  
+  await loadCatalog();
+  if (document.getElementById("panel-estimation").classList.contains("active")) {
+    renderEstimation();
+  } else {
+    populateRoleDropdown();
   }
 
-  init();
-})();
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(e => {}));
+  }
+});
