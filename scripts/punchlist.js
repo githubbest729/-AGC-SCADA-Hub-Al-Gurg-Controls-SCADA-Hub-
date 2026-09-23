@@ -1,22 +1,53 @@
 /* =========================================================
-   AGC SCADA Hub — punchlist.js
-   Cross-functional site snag tracking with WhatsApp integration.
-   (Upgraded to IndexedDB)
+   AGC SCADA Hub — scripts/punchlist.js
+   Enterprise Site Snag Tracking Module
+   Features: XSS-safe rendering, WhatsApp deep-linking,
+   Safe IndexedDB initialization, and Blob CSV Export.
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
+  "use strict";
+
   const container = document.getElementById("punchlist-container");
   const addBtn = document.getElementById("add-punchlist-btn");
+  
+  // Look for an export button in the HTML (Optional but recommended)
+  const exportBtn = document.getElementById("export-punchlist-btn"); 
+  
   const modalOverlay = document.getElementById("modal-overlay");
   const modalTitle = document.getElementById("modal-title");
   const modalBody = document.getElementById("modal-body");
   const modalFooter = document.getElementById("modal-footer");
   const modalClose = document.getElementById("modal-close");
 
-  // 1. Fetch initial data from IndexedDB
-  let punchlist = await DB.getAll("punchlist");
+  let punchlist = [];
 
-  // 2. Render function
+  // --- Security: HTML Escaper to prevent XSS Attacks ---
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
+  }
+
+  // --- Enterprise Initialization ---
+  async function initPunchlist() {
+    if (!window.DB) {
+      console.error("Critical: Database module not loaded.");
+      return;
+    }
+
+    try {
+      // Safely ensure DB is initialized before querying
+      await window.DB.init();
+      punchlist = await window.DB.getAll("punchlist");
+    } catch (e) {
+      console.warn("AGC Punchlist Module: DB initialization warning.", e);
+    }
+    
+    renderPunchlist();
+  }
+
+  // --- Core Rendering ---
   function renderPunchlist() {
     if (!container) return;
     container.innerHTML = "";
@@ -30,14 +61,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const card = document.createElement("div");
       card.className = "card pl-card";
 
-      // Build WhatsApp Deep-Link String
+      // Build WhatsApp Deep-Link String safely
       const waText = encodeURIComponent(
         `⚠️ *Site Snag Alert*\n` +
-        `*Project:* Al Gurg SCADA Execution\n` +
-        `*Discipline:* ${item.discipline}\n` +
-        `*Issue:* ${item.title}\n` +
+        `*Project:* AGC SCADA Execution\n` +
+        `*Discipline:* ${item.discipline || 'General'}\n` +
+        `*Issue:* ${item.title || 'Untitled'}\n` +
         `*Notes:* ${item.notes || 'N/A'}\n` +
-        `*Status:* ${item.status}`
+        `*Status:* ${item.status || 'Open'}`
       );
       const waLink = `https://wa.me/?text=${waText}`;
 
@@ -45,28 +76,29 @@ document.addEventListener("DOMContentLoaded", async () => {
       let badgeClass = "badge-open";
       if (item.status === "In Progress") badgeClass = "badge-progress";
       if (item.status === "Blocked") badgeClass = "badge-blocked";
-      if (item.status === "Delivered") badgeClass = "badge-delivered";
+      if (item.status === "Delivered" || item.status === "Closed") badgeClass = "badge-delivered";
 
+      // XSS-Safe HTML Injection
       card.innerHTML = `
         <div class="pl-card-top">
           <div>
-            <div class="pl-card-title">${item.title}</div>
-            <div class="pl-card-meta">Logged: ${item.date} | Tag: ${item.discipline}</div>
+            <div class="pl-card-title">${escapeHtml(item.title)}</div>
+            <div class="pl-card-meta">Logged: ${escapeHtml(item.date)} | Tag: ${escapeHtml(item.discipline)}</div>
           </div>
           <div class="pl-card-badges">
-            <span class="badge ${badgeClass}">${item.status}</span>
+            <span class="badge ${badgeClass}">${escapeHtml(item.status)}</span>
           </div>
         </div>
-        ${item.notes ? `<div class="pl-card-notes">${item.notes}</div>` : ''}
+        ${item.notes ? `<div class="pl-card-notes">${escapeHtml(item.notes)}</div>` : ''}
         <div class="pl-card-actions">
           <select class="status-update-select" data-id="${item.id}">
             <option value="Open" ${item.status === 'Open' ? 'selected' : ''}>Open</option>
             <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
             <option value="Blocked" ${item.status === 'Blocked' ? 'selected' : ''}>Blocked</option>
-            <option value="Delivered" ${item.status === 'Delivered' ? 'selected' : ''}>Closed / Fixed</option>
+            <option value="Closed" ${item.status === 'Closed' || item.status === 'Delivered' ? 'selected' : ''}>Closed / Fixed</option>
           </select>
           <a href="${waLink}" target="_blank" class="btn btn-sm btn-whatsapp" style="text-decoration:none; display:inline-flex;">📱 Share to WA</a>
-          <button class="btn btn-sm btn-danger delete-snag-btn" data-id="${item.id}">✕</button>
+          <button class="btn btn-sm btn-danger delete-snag-btn" data-id="${item.id}" title="Delete Snag">✕</button>
         </div>
       `;
       container.appendChild(card);
@@ -79,9 +111,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const snag = punchlist.find(s => s.id === id);
         if (snag) {
           snag.status = e.target.value;
-          await DB.put("punchlist", snag); // Update in IndexedDB
-          punchlist = await DB.getAll("punchlist"); // Refresh local array
-          renderPunchlist(); // Re-render
+          await window.DB.put("punchlist", snag);
+          punchlist = await window.DB.getAll("punchlist");
+          renderPunchlist();
         }
       });
     });
@@ -90,18 +122,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.querySelectorAll('.delete-snag-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         const id = e.target.getAttribute('data-id');
-        if (confirm("Are you sure you want to delete this snag?")) {
-          await DB.delete("punchlist", id); // Delete from IndexedDB
-          punchlist = await DB.getAll("punchlist"); // Refresh local array
-          renderPunchlist(); // Re-render
+        if (confirm("Permanently delete this snag?")) {
+          await window.DB.delete("punchlist", id);
+          punchlist = await window.DB.getAll("punchlist");
+          renderPunchlist();
         }
       });
     });
   }
 
-  // Handle "Log Site Snag" Button Click (Opens Modal)
+  // --- Modal Logic ---
   if (addBtn) {
     addBtn.addEventListener('click', () => {
+      if (!modalTitle || !modalBody || !modalFooter || !modalOverlay) return;
+
       modalTitle.textContent = "Log New Site Snag";
       
       modalBody.innerHTML = `
@@ -129,7 +163,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       modalOverlay.classList.remove("hidden");
 
-      // Attach Modal Button Listeners
       document.getElementById('cancel-snag-btn').addEventListener('click', () => {
         modalOverlay.classList.add("hidden");
       });
@@ -145,7 +178,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
 
         const newSnag = {
-          id: crypto.randomUUID(), // Native browser UUID generation
+          // Safe fallback if crypto.randomUUID is unsupported on an old site tablet
+          id: window.crypto?.randomUUID ? window.crypto.randomUUID() : Date.now().toString(),
           title,
           discipline,
           notes,
@@ -153,22 +187,51 @@ document.addEventListener("DOMContentLoaded", async () => {
           date: new Date().toISOString().split('T')[0]
         };
 
-        await DB.put("punchlist", newSnag); // Save to IndexedDB
-        punchlist = await DB.getAll("punchlist"); // Refresh list
-        renderPunchlist(); // Re-render
+        await window.DB.put("punchlist", newSnag);
+        punchlist = await window.DB.getAll("punchlist");
+        renderPunchlist();
         
         modalOverlay.classList.add("hidden");
       });
     });
   }
 
-  // Close modal via top-right 'X'
   if (modalClose) {
     modalClose.addEventListener('click', () => {
       modalOverlay.classList.add("hidden");
     });
   }
 
-  // Initialize
-  renderPunchlist();
+  // --- Enterprise CSV Export ---
+  // (Requires adding <button id="export-punchlist-btn">Export</button> to your HTML)
+  if (exportBtn) {
+    exportBtn.addEventListener('click', () => {
+      if (punchlist.length === 0) {
+        alert("No snags to export.");
+        return;
+      }
+      
+      const headers = ["Title", "Discipline", "Status", "Date Logged", "Notes"];
+      const rows = punchlist.map(s => [
+        s.title, s.discipline, s.status, s.date, s.notes
+      ].map(v => `"${String(v || "").replace(/"/g, '""')}"`).join(","));
+      
+      const csvContent = [headers.join(","), ...rows].join("\r\n");
+      
+      // Blob export handles unlimited file sizes and applies UTF-8 BOM for Excel
+      const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `AGC-Punchlist-Report-${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  }
+
+  // Boot up safely
+  initPunchlist();
 });
