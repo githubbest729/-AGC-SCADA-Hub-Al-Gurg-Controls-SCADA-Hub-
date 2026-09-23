@@ -1,11 +1,28 @@
 {
   "name": "agc-scada-hub",
   "version": "1.0.0",
-  "description": "AGC SCADA Hub — Al Gurg Automation and Controls PWA for requirements tracking, cost estimation, and execution management for SCADA engineers.",
+  "description": "AGC SCADA Hub — Al Gurg Automation and Controls PWA for requirements tracking, cost estimation, and execution management.",
   "private": true,
+  "author": "Estimation & Proposal Engineering Team | Al Gurg Automation and Controls",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/agc-scada-hub.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
-    "start": "npx serve . -l 5173",
-    "serve": "npx serve . -l 5173"
+    "dev": "vite",
+    "build": "vite build && npm run generate-sw",
+    "preview": "vite preview",
+    "generate-sw": "workbox generateSW workbox-config.js",
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint . --ext .js --fix",
+    "format": "prettier --write \"**/*.{js,css,html,json}\"",
+    "audit:fix": "npm audit fix",
+    "prepare": "husky install"
   },
   "keywords": [
     "scada",
@@ -15,9 +32,20 @@
     "cost-estimation",
     "kanban"
   ],
-  "author": "Al Gurg Automation and Controls",
-  "license": "MIT",
-  "engines": {
-    "node": ">=16"
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.2",
+    "prettier": "^3.2.5",
+    "vite": "^5.2.0",
+    "workbox-cli": "^7.0.0"
+  },
+  "lint-staged": {
+    "**/*.{js,css,html,json}": [
+      "prettier --write"
+    ],
+    "**/*.js": [
+      "eslint --fix"
+    ]
   }
 }
