@@ -1,8 +1,8 @@
 {
-  "catalogVersion": "2.1.0",
+  "catalogVersion": "3.1.0",
   "currency": "AED",
   "lastUpdated": "2026-09-23",
-  "notes": "Al Gurg Automation & Controls - Enterprise Engineering & Hardware Pricing Matrix (Dubai, UAE)",
+  "notes": "AGAC Master Integrator Catalog - Comprehensive Multi-Vendor Database with Custom Entry",
   
   "engineeringRates": {
     "design": 320,
@@ -13,120 +13,121 @@
   },
 
   "templates": {
-    "small": {
-      "name": "Small Project (Pumping Station / 50-100 I/O)",
-      "hours": { "design": 16, "programming": 24, "fat": 8, "sat": 16, "supervision": 12 }
-    },
-    "medium": {
-      "name": "Medium Project (WTP Upgrade / 150-300 I/O)",
-      "hours": { "design": 40, "programming": 80, "fat": 24, "sat": 40, "supervision": 32 }
-    },
-    "large": {
-      "name": "Large Project (Full Plant SCADA / 400+ I/O)",
-      "hours": { "design": 96, "programming": 160, "fat": 48, "sat": 80, "supervision": 64 }
-    }
+    "small": { "name": "Small Project (Pumping Station)", "hours": { "design": 16, "programming": 24, "fat": 8, "sat": 16, "supervision": 12 } },
+    "medium": { "name": "Medium Project (WTP Upgrade)", "hours": { "design": 40, "programming": 80, "fat": 24, "sat": 40, "supervision": 32 } },
+    "large": { "name": "Large Project (Full Plant SCADA)", "hours": { "design": 96, "programming": 160, "fat": 48, "sat": 80, "supervision": 64 } }
   },
 
   "categories": [
     {
       "id": "plc",
-      "label": "PLC",
+      "label": "PLC & Controllers",
       "unit": "pcs",
       "items": [
         { "sku": "S7-1200-CPU1214C", "vendor": "Siemens", "description": "SIMATIC S7-1200, CPU 1214C, 14 DI/10 DO/2 AI", "unitCost": 2450, "leadTimeWeeks": 2, "isActive": true },
         { "sku": "S7-1500-CPU1511-1PN", "vendor": "Siemens", "description": "SIMATIC S7-1500, CPU 1511-1 PN", "unitCost": 6800, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "S7-1500-CPU1516-3PN", "vendor": "Siemens", "description": "SIMATIC S7-1500, CPU 1516-3 PN/DP, redundancy-ready", "unitCost": 14200, "leadTimeWeeks": 6, "isActive": true },
-        { "sku": "ET200SP-CPU1510SP", "vendor": "Siemens", "description": "SIMATIC ET 200SP, CPU 1510SP-1 PN distributed controller", "unitCost": 5100, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "S7-1500-CPU1515R", "vendor": "Siemens", "description": "SIMATIC S7-1500R Redundant Controller", "unitCost": 18500, "leadTimeWeeks": 6, "isActive": true },
         { "sku": "CLX-L83E-1756", "vendor": "Allen-Bradley", "description": "ControlLogix 5580, 1756-L83E processor", "unitCost": 15600, "leadTimeWeeks": 8, "isActive": true },
-        { "sku": "CLX-L71-1756", "vendor": "Allen-Bradley", "description": "ControlLogix 5570, 1756-L71 processor", "unitCost": 11400, "leadTimeWeeks": 8, "isActive": false },
-        { "sku": "CPX-L24ER-QBFC1B", "vendor": "Allen-Bradley", "description": "CompactLogix 5380, 1769-L24ER-QBFC1B", "unitCost": 4950, "leadTimeWeeks": 6, "isActive": true },
-        { "sku": "MICRO850-2080-LC50", "vendor": "Allen-Bradley", "description": "Micro850, 2080-LC50-24QWB controller", "unitCost": 1850, "leadTimeWeeks": 2, "isActive": true }
+        { "sku": "CPX-L306ER", "vendor": "Allen-Bradley", "description": "CompactLogix 5380, 5069-L306ER", "unitCost": 5800, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "BMEXBP0800", "vendor": "Schneider", "description": "Modicon M580 ePAC Processor", "unitCost": 12400, "leadTimeWeeks": 6, "isActive": true },
+        { "sku": "PM573-ETH", "vendor": "ABB", "description": "AC500 PLC Processor with Ethernet", "unitCost": 4200, "leadTimeWeeks": 4, "isActive": true }
       ]
     },
     {
       "id": "io_module",
-      "label": "I/O Module",
+      "label": "I/O & Remote Drops",
       "unit": "pcs",
       "items": [
-        { "sku": "SM1221-DI16", "vendor": "Siemens", "description": "SM 1221 Digital Input module, 16 x DC24V", "unitCost": 480, "leadTimeWeeks": 2, "isActive": true },
-        { "sku": "SM1222-DO16", "vendor": "Siemens", "description": "SM 1222 Digital Output module, 16 x relay", "unitCost": 620, "leadTimeWeeks": 2, "isActive": true },
-        { "sku": "SM1231-AI8", "vendor": "Siemens", "description": "SM 1231 Analog Input module, 8 x AI (RTD/TC)", "unitCost": 1050, "leadTimeWeeks": 3, "isActive": true },
-        { "sku": "SM1232-AO4", "vendor": "Siemens", "description": "SM 1232 Analog Output module, 4 x AO", "unitCost": 890, "leadTimeWeeks": 3, "isActive": true },
-        { "sku": "ET200SP-DI16", "vendor": "Siemens", "description": "ET 200SP Digital Input module, 16 x DC24V, HF", "unitCost": 520, "leadTimeWeeks": 2, "isActive": true },
-        { "sku": "1756-IB16", "vendor": "Allen-Bradley", "description": "ControlLogix Digital Input module, 16 x DC24V", "unitCost": 690, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "1756-OB16", "vendor": "Allen-Bradley", "description": "ControlLogix Digital Output module, 16 x DC24V", "unitCost": 740, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "1756-IF8", "vendor": "Allen-Bradley", "description": "ControlLogix Analog Input module, 8 x AI", "unitCost": 1620, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "1756-OF8", "vendor": "Allen-Bradley", "description": "ControlLogix Analog Output module, 8 x AO", "unitCost": 1780, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "1769-IQ16", "vendor": "Allen-Bradley", "description": "CompactLogix Digital Input module, 16 x DC24V", "unitCost": 410, "leadTimeWeeks": 4, "isActive": true }
+        { "sku": "ET200SP-DI16", "vendor": "Siemens", "description": "ET 200SP Digital Input, 16x DC24V", "unitCost": 520, "leadTimeWeeks": 2, "isActive": true },
+        { "sku": "ET200SP-DO16", "vendor": "Siemens", "description": "ET 200SP Digital Output, 16x 24VDC", "unitCost": 590, "leadTimeWeeks": 2, "isActive": true },
+        { "sku": "ET200SP-AI8", "vendor": "Siemens", "description": "ET 200SP Analog Input, 8x TC/RTD/mA", "unitCost": 1100, "leadTimeWeeks": 3, "isActive": true },
+        { "sku": "1756-IB16", "vendor": "Allen-Bradley", "description": "ControlLogix Digital Input, 16x DC24V", "unitCost": 690, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "1756-OF8", "vendor": "Allen-Bradley", "description": "ControlLogix Analog Output, 8x AO", "unitCost": 1780, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "WAGO-750-352", "vendor": "WAGO", "description": "Ethernet/IP Fieldbus Coupler", "unitCost": 850, "leadTimeWeeks": 2, "isActive": true }
       ]
     },
     {
-      "id": "scada_tags",
-      "label": "SCADA Tags",
-      "unit": "tags",
+      "id": "panel_hardware",
+      "label": "Control Panel Hardware",
+      "unit": "pcs",
       "items": [
-        { "sku": "WINCC-RT-128", "vendor": "Siemens", "description": "WinCC RT Professional, 128 PowerTags license tier", "unitCost": 45, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "WINCC-RT-512", "vendor": "Siemens", "description": "WinCC RT Professional, 512 PowerTags license tier", "unitCost": 38, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "WINCC-RT-2048", "vendor": "Siemens", "description": "WinCC RT Professional, 2048 PowerTags license tier", "unitCost": 29, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "FTVIEW-SE-500", "vendor": "Rockwell", "description": "FactoryTalk View SE, 500 tag license tier", "unitCost": 42, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "FTVIEW-SE-5000", "vendor": "Rockwell", "description": "FactoryTalk View SE, 5000 tag license tier", "unitCost": 27, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "IGNITION-UNLIMITED", "vendor": "Inductive Automation", "description": "Ignition SCADA, unlimited tag license (per server)", "unitCost": 18, "leadTimeWeeks": 1, "isActive": true }
+        { "sku": "RITTAL-8806", "vendor": "Rittal", "description": "VX25 Floor Standing Enclosure 800x2000x600", "unitCost": 3200, "leadTimeWeeks": 3, "isActive": true },
+        { "sku": "SITOP-24V-20A", "vendor": "Siemens", "description": "SITOP PSU8200 24V DC / 20A Power Supply", "unitCost": 980, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "QUINT4-PS", "vendor": "Phoenix Contact", "description": "QUINT POWER 24V DC / 10A", "unitCost": 850, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "MCB-2P-6A", "vendor": "Schneider", "description": "Acti9 iC60N MCB 2 Pole 6A", "unitCost": 85, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "RELAY-24V-DPDT", "vendor": "Omron", "description": "MY2N-GS 24VDC Relay with Socket", "unitCost": 45, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "TERM-UK2.5", "vendor": "Phoenix Contact", "description": "UK 2.5 N Terminal Block (Box of 50)", "unitCost": 120, "leadTimeWeeks": 1, "isActive": true }
       ]
     },
     {
-      "id": "network_switch",
-      "label": "Network Switch",
+      "id": "networking",
+      "label": "Industrial Networking",
       "unit": "pcs",
       "items": [
-        { "sku": "SCALANCE-XC208", "vendor": "Siemens", "description": "SCALANCE XC208, 8-port industrial managed switch", "unitCost": 1450, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "SCALANCE-XC216", "vendor": "Siemens", "description": "SCALANCE XC216, 16-port industrial managed switch", "unitCost": 2680, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "SCALANCE-XM416", "vendor": "Siemens", "description": "SCALANCE XM416-4C, 16-port Layer 3 managed switch", "unitCost": 5950, "leadTimeWeeks": 6, "isActive": true },
-        { "sku": "STRATIX-2500-8P", "vendor": "Allen-Bradley", "description": "Stratix 2500, 8-port unmanaged industrial switch", "unitCost": 980, "leadTimeWeeks": 6, "isActive": true },
-        { "sku": "STRATIX-5700-16P", "vendor": "Allen-Bradley", "description": "Stratix 5700, 16-port managed industrial switch", "unitCost": 3200, "leadTimeWeeks": 8, "isActive": true }
+        { "sku": "SCALANCE-XC208", "vendor": "Siemens", "description": "SCALANCE XC208, 8-port managed switch", "unitCost": 1450, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "STRATIX-5700-16P", "vendor": "Allen-Bradley", "description": "Stratix 5700, 16-port managed switch", "unitCost": 3200, "leadTimeWeeks": 8, "isActive": true },
+        { "sku": "MOXA-EDS-208", "vendor": "Moxa", "description": "EDS-208 8-port unmanaged switch", "unitCost": 450, "leadTimeWeeks": 2, "isActive": true },
+        { "sku": "ANYBUS-MOD-EIP", "vendor": "HMS Anybus", "description": "Anybus X-gateway Modbus RTU to EtherNet/IP", "unitCost": 2100, "leadTimeWeeks": 3, "isActive": true },
+        { "sku": "TOFINO-FW", "vendor": "Belden", "description": "Tofino Xenon Industrial Security Firewall", "unitCost": 4800, "leadTimeWeeks": 5, "isActive": true }
+      ]
+    },
+    {
+      "id": "vfd_mcc",
+      "label": "VFDs & Motor Control",
+      "unit": "pcs",
+      "items": [
+        { "sku": "G120C-11KW", "vendor": "Siemens", "description": "SINAMICS G120C Compact VFD, 11 kW", "unitCost": 3400, "leadTimeWeeks": 3, "isActive": true },
+        { "sku": "G120C-45KW", "vendor": "Siemens", "description": "SINAMICS G120C Compact VFD, 45 kW", "unitCost": 8900, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "PF525-11KW", "vendor": "Rockwell", "description": "PowerFlex 525 AC Drive, 11 kW", "unitCost": 3600, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "ACS580-22KW", "vendor": "ABB", "description": "ACS580 General Purpose Drive, 22 kW", "unitCost": 5200, "leadTimeWeeks": 3, "isActive": true }
+      ]
+    },
+    {
+      "id": "instrumentation",
+      "label": "Field Instrumentation",
+      "unit": "pcs",
+      "items": [
+        { "sku": "PROMAG-W400", "vendor": "Endress+Hauser", "description": "Promag W 400 Electromagnetic Flowmeter, DN100", "unitCost": 7500, "leadTimeWeeks": 6, "isActive": true },
+        { "sku": "VEGAPULS-69", "vendor": "Vega", "description": "VEGAPULS 69 Radar Level Transmitter", "unitCost": 4800, "leadTimeWeeks": 4, "isActive": true },
+        { "sku": "ROSEMOUNT-3051", "vendor": "Emerson", "description": "Rosemount 3051 Coplanar Pressure Transmitter", "unitCost": 3900, "leadTimeWeeks": 5, "isActive": true },
+        { "sku": "LIQUILINE-CM442", "vendor": "Endress+Hauser", "description": "Liquiline CM442 pH/Conductivity Analyzer", "unitCost": 5100, "leadTimeWeeks": 4, "isActive": true }
       ]
     },
     {
       "id": "hmi_panel",
-      "label": "HMI Panel",
+      "label": "HMI & Operator Panels",
       "unit": "pcs",
       "items": [
-        { "sku": "KTP700-BASIC", "vendor": "Siemens", "description": "SIMATIC KTP700 Basic, 7\" touch panel", "unitCost": 1650, "leadTimeWeeks": 2, "isActive": true },
         { "sku": "TP1200-COMFORT", "vendor": "Siemens", "description": "SIMATIC TP1200 Comfort, 12\" touch panel", "unitCost": 4200, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "TP1500-COMFORT", "vendor": "Siemens", "description": "SIMATIC TP1500 Comfort, 15\" touch panel", "unitCost": 5850, "leadTimeWeeks": 4, "isActive": true },
-        { "sku": "PANELVIEW-800-7IN", "vendor": "Allen-Bradley", "description": "PanelView 800, 7\" color touch terminal", "unitCost": 2100, "leadTimeWeeks": 6, "isActive": true },
-        { "sku": "PANELVIEW-5510-12IN", "vendor": "Allen-Bradley", "description": "PanelView 5510, 12\" widescreen terminal", "unitCost": 7400, "leadTimeWeeks": 8, "isActive": true }
+        { "sku": "PANELVIEW-5510-12IN", "vendor": "Allen-Bradley", "description": "PanelView 5510, 12\" widescreen terminal", "unitCost": 7400, "leadTimeWeeks": 8, "isActive": true },
+        { "sku": "MAGELIS-10IN", "vendor": "Schneider", "description": "Harmony GTU 10\" Touch Panel", "unitCost": 3800, "leadTimeWeeks": 4, "isActive": true }
       ]
     },
     {
-      "id": "server_workstation",
-      "label": "Server/Workstation",
-      "unit": "pcs",
-      "items": [
-        { "sku": "SCADA-SRV-STD", "vendor": "Al Gurg Std. Build", "description": "Industrial rack-mount SCADA server, redundant PSU", "unitCost": 12500, "leadTimeWeeks": 3, "isActive": true },
-        { "sku": "ENG-WORKSTATION", "vendor": "Al Gurg Std. Build", "description": "Engineering workstation, i7, 32GB RAM, dual monitor ready", "unitCost": 6200, "leadTimeWeeks": 2, "isActive": true },
-        { "sku": "HISTORIAN-SRV", "vendor": "Al Gurg Std. Build", "description": "Data historian server, 4TB RAID storage", "unitCost": 15800, "leadTimeWeeks": 3, "isActive": true }
-      ]
-    },
-    {
-      "id": "cabling",
-      "label": "Cabling",
-      "unit": "m",
-      "items": [
-        { "sku": "CAT6-INDUSTRIAL", "vendor": "Generic", "description": "Industrial-grade shielded Cat6 Ethernet cable", "unitCost": 9.5, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "PROFIBUS-CABLE", "vendor": "Siemens", "description": "PROFIBUS DP purple cable, shielded twisted pair", "unitCost": 12, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "FIBER-OM3-DUPLEX", "vendor": "Generic", "description": "OM3 multimode duplex fiber optic cable", "unitCost": 18, "leadTimeWeeks": 2, "isActive": true },
-        { "sku": "INSTRUMENT-CABLE-2C", "vendor": "Generic", "description": "2-core screened instrumentation cable, 1.5mm²", "unitCost": 7.2, "leadTimeWeeks": 1, "isActive": true }
-      ]
-    },
-    {
-      "id": "software_license",
-      "label": "Software License",
+      "id": "scada_software",
+      "label": "SCADA & Software Licenses",
       "unit": "lot",
       "items": [
-        { "sku": "TIA-PORTAL-PRO", "vendor": "Siemens", "description": "TIA Portal Professional, per-seat engineering license", "unitCost": 8500, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "STUDIO5000-PRO", "vendor": "Rockwell", "description": "Studio 5000 Professional, per-seat engineering license", "unitCost": 9200, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "WINCC-UA-RT", "vendor": "Siemens", "description": "WinCC Unified PC Runtime license", "unitCost": 11500, "leadTimeWeeks": 1, "isActive": true },
-        { "sku": "FTLINX-GATEWAY", "vendor": "Rockwell", "description": "FactoryTalk Linx Gateway license", "unitCost": 3400, "leadTimeWeeks": 1, "isActive": true }
+        { "sku": "WINCC-RT-2048", "vendor": "Siemens", "description": "WinCC RT Professional, 2048 PowerTags", "unitCost": 29000, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "TIA-PORTAL-PRO", "vendor": "Siemens", "description": "TIA Portal V18 Professional", "unitCost": 8500, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "FTVIEW-SE-5000", "vendor": "Rockwell", "description": "FactoryTalk View SE, 5000 tag tier", "unitCost": 27000, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "IGNITION-UNLIMITED", "vendor": "Inductive Automation", "description": "Ignition SCADA, unlimited tag license (per server)", "unitCost": 58000, "leadTimeWeeks": 1, "isActive": true },
+        { "sku": "AVEVA-SYS-PLATFORM", "vendor": "AVEVA / Wonderware", "description": "AVEVA System Platform, 10k tags", "unitCost": 42000, "leadTimeWeeks": 1, "isActive": true }
+      ]
+    },
+    {
+      "id": "custom_item",
+      "label": "Custom / Third-Party Equipment",
+      "unit": "lot",
+      "items": [
+        {
+          "sku": "CUSTOM-EQUIPMENT",
+          "vendor": "Custom / Open Entry",
+          "description": "User-defined field instrument, panel hardware, or specialized controller",
+          "unitCost": 0,
+          "leadTimeWeeks": 0,
+          "isActive": true
+        }
       ]
     }
   ]
