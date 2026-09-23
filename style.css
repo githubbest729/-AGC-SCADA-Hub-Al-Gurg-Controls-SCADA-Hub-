@@ -14,6 +14,8 @@
   --amber: #f59e0b;
   --green: #22c55e;
   --red: #ef4444;
+  --whatsapp: #25D366;
+  --whatsapp-dark: #128C7E;
   --radius: 8px;
   --shadow: 0 4px 14px rgba(0,0,0,0.35);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -91,6 +93,10 @@ p { margin: 0; }
   font-size: 0.85rem;
   cursor: pointer;
   transition: background 0.15s, border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
 }
 .btn:hover { background: var(--slate-700); }
 .btn-primary {
@@ -100,6 +106,13 @@ p { margin: 0; }
   font-weight: 700;
 }
 .btn-primary:hover { background: var(--electric-blue-dark); border-color: var(--electric-blue-dark); color: var(--white); }
+.btn-whatsapp {
+  background: var(--whatsapp);
+  border-color: var(--whatsapp);
+  color: var(--white);
+  font-weight: 600;
+}
+.btn-whatsapp:hover { background: var(--whatsapp-dark); border-color: var(--whatsapp-dark); }
 .btn-ghost { background: transparent; }
 .btn-sm { padding: 5px 10px; font-size: 0.78rem; }
 .btn-danger { background: var(--red); border-color: var(--red); color: var(--white); }
@@ -145,6 +158,32 @@ p { margin: 0; }
 }
 .hint-text { color: var(--slate-400); font-size: 0.8rem; margin-bottom: 14px; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---- Punchlist ---- */
+.pl-form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px 14px; }
+.pl-card { padding: 14px; }
+.pl-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; flex-wrap: wrap; }
+.pl-card-title { font-weight: 700; color: var(--white); font-size: 0.92rem; }
+.pl-card-meta { color: var(--slate-400); font-size: 0.76rem; }
+.pl-card-badges { display: flex; gap: 6px; flex-shrink: 0; }
+.pl-card-notes { font-size: 0.8rem; color: var(--slate-300); margin-top: 8px; background: var(--slate-800); border-radius: 6px; padding: 8px; }
+.pl-card-actions { display: flex; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.pl-card-actions select { width: auto; min-width: 130px; }
+
+/* ---- I/O Calculator ---- */
+.io-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.io-preset-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.io-result-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--slate-800); font-size: 0.88rem; }
+.io-tier-callout { background: rgba(56,189,248,0.08); border: 1px solid var(--electric-blue); border-radius: var(--radius); padding: 12px; margin-top: 12px; font-size: 0.88rem; }
+
+/* ---- FAT/SAT Checklist ---- */
+.fatsat-meta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+.fatsat-meta-row label { flex: 1; min-width: 160px; }
+.fatsat-progress-bar { height: 10px; background: var(--slate-800); border-radius: 999px; overflow: hidden; margin-bottom: 16px; }
+.fatsat-progress-fill { height: 100%; background: var(--electric-blue); transition: width 0.2s; }
+.fatsat-item-row { display: grid; grid-template-columns: 1fr 130px; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--slate-800); font-size: 0.85rem; }
+.fatsat-item-row:last-child { border-bottom: none; }
+.fatsat-item-phase-tag { font-size: 0.68rem; color: var(--slate-400); margin-left: 6px; }
 
 /* ---- Cards ---- */
 .card {
