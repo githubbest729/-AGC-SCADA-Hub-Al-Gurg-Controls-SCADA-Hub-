@@ -1,8 +1,31 @@
 {
-  "catalogVersion": "1.0.0",
+  "catalogVersion": "2.0.0",
   "currency": "AED",
-  "lastUpdated": "2026-09-01",
-  "notes": "Standardized Al Gurg Automation & Controls budgetary pricing for estimation purposes.",
+  "lastUpdated": "2026-09-23",
+  "notes": "Al Gurg Automation & Controls - Enterprise Engineering & Hardware Pricing Matrix (Dubai, UAE)",
+  
+  "engineeringRates": {
+    "design": 320,
+    "programming": 280,
+    "fat": 260,
+    "sat": 300,
+    "supervision": 350
+  },
+
+  "templates": {
+    "small": {
+      "name": "Small Project (Pumping Station / 50-100 I/O)",
+      "hours": { "design": 16, "programming": 24, "fat": 8, "sat": 16, "supervision": 12 }
+    },
+    "medium": {
+      "name": "Medium Project (WTP Upgrade / 150-300 I/O)",
+      "hours": { "design": 40, "programming": 80, "fat": 24, "sat": 40, "supervision": 32 }
+    },
+    "large": {
+      "name": "Large Project (Full Plant SCADA / 400+ I/O)",
+      "hours": { "design": 96, "programming": 160, "fat": 48, "sat": 80, "supervision": 64 }
+    }
+  },
 
   "categories": [
     {
@@ -106,18 +129,5 @@
         { "sku": "FTLINX-GATEWAY", "vendor": "Rockwell", "description": "FactoryTalk Linx Gateway license", "unitCost": 3400 }
       ]
     }
-  ],
-
-  "engineeringRates": {
-    "currency": "AED",
-    "rates": [
-      { "role": "Junior SCADA Engineer", "hourlyRate": 90 },
-      { "role": "SCADA Engineer", "hourlyRate": 150 },
-      { "role": "Senior SCADA / Control Systems Engineer", "hourlyRate": 220 },
-      { "role": "Project Engineer", "hourlyRate": 180 },
-      { "role": "Commissioning Engineer", "hourlyRate": 200 },
-      { "role": "Panel Design Draftsman", "hourlyRate": 110 }
-    ],
-    "defaultRate": 150
-  }
+  ]
 }
