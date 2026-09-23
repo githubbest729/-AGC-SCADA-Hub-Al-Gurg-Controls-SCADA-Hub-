@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Modal Logic ---
+ // --- Modal Logic ---
   if (addBtn) {
     addBtn.addEventListener('click', () => {
       if (!modalTitle || !modalBody || !modalFooter || !modalOverlay) return;
@@ -178,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         const newSnag = {
-          // Safe fallback if crypto.randomUUID is unsupported on an old site tablet
           id: window.crypto?.randomUUID ? window.crypto.randomUUID() : Date.now().toString(),
           title,
           discipline,
@@ -187,8 +187,9 @@ document.addEventListener("DOMContentLoaded", () => {
           date: new Date().toISOString().split('T')[0]
         };
 
-        await window.DB.put("punchlist", newSnag);
-        punchlist = await window.DB.getAll("punchlist");
+        // FIXED: Calling DB directly without the window prefix
+        await DB.put("punchlist", newSnag);
+        punchlist = await DB.getAll("punchlist");
         renderPunchlist();
         
         modalOverlay.classList.add("hidden");
