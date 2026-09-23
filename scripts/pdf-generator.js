@@ -55,13 +55,16 @@ window.AGC.PDF = (() => {
       `;
     }).join("");
 
-    // Create container element and explicitly attach to DOM to avoid missing source errors
+    // Create container element and mount it visibly in DOM flow with opacity 0 to prevent coordinate rendering errors
     const container = document.createElement("div");
     container.id = "agc-pdf-export-container";
     container.style.position = "absolute";
-    container.style.left = "-9999px";
     container.style.top = "0";
-    container.style.width = "794px"; // Standard A4 width in px at 96 DPI
+    container.style.left = "0";
+    container.style.width = "794px"; // Standard A4 width in pixels at 96 DPI
+    container.style.opacity = "0";
+    container.style.pointerEvents = "none";
+    container.style.zIndex = "-1000";
     container.style.padding = "30px";
     container.style.fontFamily = "Arial, sans-serif";
     container.style.color = "#1e293b";
@@ -199,7 +202,6 @@ window.AGC.PDF = (() => {
       </div>
     `;
 
-    // Ensure the container is fully mounted in the DOM before html2pdf reads it
     document.body.appendChild(container);
 
     const opt = {
@@ -210,26 +212,28 @@ window.AGC.PDF = (() => {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Generate blob and trigger forced download via anchor element
-    html2pdf().from(container).set(opt).outputPdf('blob').then((pdfBlob) => {
-      const blobUrl = URL.createObjectURL(pdfBlob);
-      const downloadLink = document.createElement("a");
-      downloadLink.href = blobUrl;
-      downloadLink.download = filename;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-      URL.revokeObjectURL(blobUrl);
-    }).then(() => {
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
-      }
-    }).catch((err) => {
-      console.error("PDF generation failed:", err);
-      if (document.body.contains(container)) {
-        document.body.removeChild(container);
-      }
-    });
+    // Use a small timeout to let the DOM engine register the container element before html2pdf parses it
+    setTimeout(() => {
+      html2pdf().from(container).set(opt).outputPdf('blob').then((pdfBlob) => {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const downloadLink = document.createElement("a");
+        downloadLink.href = blobUrl;
+        downloadLink.download = filename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(blobUrl);
+      }).then(() => {
+        if (document.body.contains(container)) {
+          document.body.removeChild(container);
+        }
+      }).catch((err) => {
+        console.error("PDF generation failed:", err);
+        if (document.body.contains(container)) {
+          document.body.removeChild(container);
+        }
+      });
+    }, 150);
   }
 
   function escapeHtml(str) {
