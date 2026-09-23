@@ -37,9 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Safely ensure DB is initialized before querying
-      await window.DB.init();
-      punchlist = await window.DB.getAll("punchlist");
+      // Safely ensure DB is initialized before querying (FIXED: window prefix removed)
+      await DB.init();
+      punchlist = await DB.getAll("punchlist");
     } catch (e) {
       console.warn("AGC Punchlist Module: DB initialization warning.", e);
     }
@@ -104,15 +104,15 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(card);
     });
 
-   // Attach Status Update Listeners
+    // Attach Status Update Listeners
     document.querySelectorAll('.status-update-select').forEach(select => {
       select.addEventListener('change', async (e) => {
         const id = e.target.getAttribute('data-id');
         const snag = punchlist.find(s => s.id === id);
         if (snag) {
           snag.status = e.target.value;
-          await DB.put("punchlist", snag); // Removed window. prefix
-          punchlist = await DB.getAll("punchlist"); // Removed window. prefix
+          await DB.put("punchlist", snag);
+          punchlist = await DB.getAll("punchlist");
           renderPunchlist();
         }
       });
@@ -123,15 +123,15 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener('click', async (e) => {
         const id = e.target.getAttribute('data-id');
         if (confirm("Permanently delete this snag?")) {
-          await DB.delete("punchlist", id); // Removed window. prefix
-          punchlist = await DB.getAll("punchlist"); // Removed window. prefix
+          await DB.delete("punchlist", id);
+          punchlist = await DB.getAll("punchlist");
           renderPunchlist();
         }
       });
     });
+  }
 
   // --- Modal Logic ---
- // --- Modal Logic ---
   if (addBtn) {
     addBtn.addEventListener('click', () => {
       if (!modalTitle || !modalBody || !modalFooter || !modalOverlay) return;
@@ -186,7 +186,6 @@ document.addEventListener("DOMContentLoaded", () => {
           date: new Date().toISOString().split('T')[0]
         };
 
-        // FIXED: Calling DB directly without the window prefix
         await DB.put("punchlist", newSnag);
         punchlist = await DB.getAll("punchlist");
         renderPunchlist();
@@ -203,7 +202,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Enterprise CSV Export ---
-  // (Requires adding <button id="export-punchlist-btn">Export</button> to your HTML)
   if (exportBtn) {
     exportBtn.addEventListener('click', () => {
       if (punchlist.length === 0) {
@@ -218,7 +216,6 @@ document.addEventListener("DOMContentLoaded", () => {
       
       const csvContent = [headers.join(","), ...rows].join("\r\n");
       
-      // Blob export handles unlimited file sizes and applies UTF-8 BOM for Excel
       const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       
