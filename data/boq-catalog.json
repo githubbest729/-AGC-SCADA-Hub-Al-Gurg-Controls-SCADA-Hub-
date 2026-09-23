@@ -2,7 +2,7 @@
   "catalogVersion": "1.0.0",
   "currency": "AED",
   "lastUpdated": "2026-09-01",
-  "notes": "Standardized Al Gurg Automation & Controls budgetary pricing for estimation purposes. Confirm against latest vendor price lists before issuing a firm client quotation.",
+  "notes": "Standardized Al Gurg Automation & Controls budgetary pricing for estimation purposes.",
 
   "categories": [
     {
@@ -92,7 +92,7 @@
         { "sku": "CAT6-INDUSTRIAL", "vendor": "Generic", "description": "Industrial-grade shielded Cat6 Ethernet cable", "unitCost": 9.5 },
         { "sku": "PROFIBUS-CABLE", "vendor": "Siemens", "description": "PROFIBUS DP purple cable, shielded twisted pair", "unitCost": 12 },
         { "sku": "FIBER-OM3-DUPLEX", "vendor": "Generic", "description": "OM3 multimode duplex fiber optic cable", "unitCost": 18 },
-        { "sku": "INSTRUMENT-CABLE-2C", "vendor": "Generic", "description": "2-core screened instrumentation cable, 1.5mm\u00b2", "unitCost": 7.2 }
+        { "sku": "INSTRUMENT-CABLE-2C", "vendor": "Generic", "description": "2-core screened instrumentation cable, 1.5mm²", "unitCost": 7.2 }
       ]
     },
     {
