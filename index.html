@@ -223,11 +223,21 @@
   <!-- COST ESTIMATION ENGINE -->
   <section class="tab-panel" id="panel-estimation">
     <div class="panel-header-row">
-      <h2 class="panel-title">Cost Estimation Engine</h2>
+      <h2 class="panel-title">Enterprise Cost Estimation Engine</h2>
       <div class="btn-row">
         <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
         <button class="btn btn-ghost" id="export-csv-btn">⬇ Download CSV</button>
         <button class="btn btn-primary" id="print-estimate-btn">Print / PDF Summary</button>
+      </div>
+    </div>
+
+    <!-- Template Loader Row -->
+    <div class="card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+      <span style="font-size: 0.85rem; font-weight: 600; color: var(--electric-blue);">Load Project Template:</span>
+      <div class="btn-row">
+        <button class="btn btn-ghost btn-sm" data-template="small">Small Project (50-100 I/O)</button>
+        <button class="btn btn-ghost btn-sm" data-template="medium">Medium Project (150-300 I/O)</button>
+        <button class="btn btn-ghost btn-sm" data-template="large">Large Project (400+ I/O)</button>
       </div>
     </div>
 
@@ -245,29 +255,59 @@
             <option value="USD">USD</option>
           </select>
         </label>
-        <label>Contingency %
+        <label>Contingency % (Applied to Subtotal)
           <input type="number" id="est-contingency" value="10" min="0" step="1" />
         </label>
-        <label>Net Profit Margin %
+        <label>Net Profit Margin % (Applied after Contingency)
           <input type="number" id="est-margin" value="15" min="0" step="1" />
         </label>
 
-        <h3 style="margin-top: 15px; margin-bottom: 8px; font-size: 0.85rem; color: var(--electric-blue);">Engineering Phase Hours</h3>
-        <label>Design &amp; Architecture (Hrs)
-          <input type="number" id="hrs-design" value="0" min="0" step="1"/>
-        </label>
-        <label>PLC / SCADA Programming (Hrs)
-          <input type="number" id="hrs-prog" value="0" min="0" step="1"/>
-        </label>
-        <label>FAT Execution (Hrs)
-          <input type="number" id="hrs-fat" value="0" min="0" step="1"/>
-        </label>
-        <label>SAT &amp; Commissioning (Hrs)
-          <input type="number" id="hrs-sat" value="0" min="0" step="1"/>
-        </label>
-        <label>Site Supervision (Hrs)
-          <input type="number" id="hrs-comm" value="0" min="0" step="1"/>
-        </label>
+        <h3 style="margin-top: 15px; margin-bottom: 12px; font-size: 0.85rem; color: var(--electric-blue);">Phase Hours &amp; Rates (AED/hr)</h3>
+        
+        <!-- Design Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Design &amp; Architecture</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-design" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-design" value="320" min="0" step="1" style="margin-top:2px;"/></label>
+          </div>
+        </div>
+
+        <!-- Programming Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">PLC / SCADA Programming</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-prog" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-prog" value="280" min="0" step="1" style="margin-top:2px;"/></label>
+          </div>
+        </div>
+
+        <!-- FAT Execution Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">FAT Execution</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-fat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-fat" value="260" min="0" step="1" style="margin-top:2px;"/></label>
+          </div>
+        </div>
+
+        <!-- SAT & Commissioning Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">SAT &amp; Commissioning</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-sat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-sat" value="300" min="0" step="1" style="margin-top:2px;"/></label>
+          </div>
+        </div>
+
+        <!-- Site Supervision Phase -->
+        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Site Supervision</div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-supervision" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-supervision" value="350" min="0" step="1" style="margin-top:2px;"/></label>
+          </div>
+        </div>
       </div>
 
       <div class="card est-boq-card">
