@@ -154,7 +154,7 @@ window.AGC.PDF = (() => {
         </table>
 
         <!-- Payment Terms + Totals -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;page-break-inside:avoid;break-inside:avoid;">
           <div style="width:45%;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:6px;font-size:9pt;color:#334155;">
             <strong>Commercial Payment Terms:</strong><br><br>
             • 40% Advance upon order placement<br>
@@ -190,7 +190,7 @@ window.AGC.PDF = (() => {
         </div>
 
         <!-- Signatures -->
-        <div style="display:flex;justify-content:space-between;margin-top:30px;margin-bottom:20px;font-size:9.5pt;">
+        <div style="display:flex;justify-content:space-between;margin-top:30px;margin-bottom:20px;font-size:9.5pt;page-break-inside:avoid;break-inside:avoid;">
           <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;">
             <strong>Prepared By:</strong><br>
             Al Gurg Automation &amp; Controls<br>
@@ -204,7 +204,7 @@ window.AGC.PDF = (() => {
         </div>
 
         <!-- Footer -->
-        <div style="border-top:1px solid #cbd5e1;padding-top:10px;display:flex;justify-content:space-between;font-size:8pt;color:#64748b;">
+        <div style="border-top:1px solid #cbd5e1;padding-top:10px;display:flex;justify-content:space-between;font-size:8pt;color:#64748b;page-break-inside:avoid;break-inside:avoid;">
           <span>Confidential — Al Gurg Automation &amp; Controls</span>
           <span>Page 1 of 1</span>
         </div>
@@ -235,7 +235,12 @@ window.AGC.PDF = (() => {
           logging: false,
           backgroundColor: "#ffffff"
         },
-        jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" }
+        jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
+        // Without this, html2pdf's auto-pagination can slice straight through
+        // a row (e.g. the footer) if content is even slightly taller than one
+        // page. 'css' mode makes it honor page-break-inside:avoid on the
+        // signature/footer/summary blocks above instead of cutting mid-row.
+        pagebreak:    { mode: ["css", "legacy"] }
       };
 
       html2pdf()
