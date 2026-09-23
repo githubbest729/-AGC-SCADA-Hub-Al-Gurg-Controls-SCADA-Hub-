@@ -4,13 +4,11 @@
    Tabs, requirements matrix, cost estimation engine, 
    execution kanban board, offline handling.
    ========================================================= */
-
 document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
 
   /* ---------------- 1. Initialize DB & Seed ---------------- */
   await DB.init();
-
   const projects = await DB.getAll("projects");
   if (projects.length === 0) {
     try {
@@ -32,22 +30,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentEstimate: newEstimate()
   };
 
-  // Load draft estimate from local storage (keeps in-progress work safe if you refresh)
+  // Load draft estimate from local storage
   const draft = localStorage.getItem("agc_draft_estimate");
   if (draft) {
     try {
       DATA.currentEstimate = Object.assign(newEstimate(), JSON.parse(draft));
-    } catch(e) {}
+    } catch (e) {}
   }
 
-  // Master function to sync local state with IndexedDB
   async function refreshData() {
     DATA.requirements = await DB.getAll("requirements");
     DATA.tasks = await DB.getAll("kanban");
     DATA.estimates = await DB.getAll("estimates");
   }
-
-  await refreshData(); // Initial load
+  await refreshData();
 
   function newEstimate() {
     return {
@@ -69,7 +65,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // Save in-progress estimate to localStorage (drafts don't need IndexedDB yet)
   function saveDraft() {
     try {
       localStorage.setItem("agc_draft_estimate", JSON.stringify(DATA.currentEstimate));
@@ -81,7 +76,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const PHASES = ["Design", "Programming", "FAT", "Commissioning", "SAT"];
   const REQ_STATUSES = ["Open", "In Progress", "Blocked", "Delivered"];
-
   const FALLBACK_CATEGORIES = ["PLC", "SCADA Tags", "I/O Module", "Network Switch", "HMI Panel", "Server/Workstation", "Cabling", "Software License", "Other"];
   const FALLBACK_UNITS = ["pcs", "tags", "pts", "m", "lot", "hrs"];
 
@@ -105,7 +99,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function getCategoryLabels() {
-    if (CATALOG && Array.isArray(CATALOG.categories) && CATALOG.categories.length) return CATALOG.categories.map(c => c.label);
+    if (CATALOG && Array.isArray(CATALOG.categories) && CATALOG.categories.length) {
+      return CATALOG.categories.map(c => c.label);
+    }
     return FALLBACK_CATEGORIES;
   }
 
@@ -139,9 +135,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function escapeHtml(str) {
-    return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    return String(str ?? "").replace(/[&<>"']/g, c =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])
+    );
   }
-  function escapeAttr(str) { return escapeHtml(str); }
+
+  function escapeAttr(str) {
+    return escapeHtml(str);
+  }
 
   /* ---------------- Sync / Offline status ---------------- */
   const syncStatusEl = document.getElementById("sync-status");
@@ -195,11 +196,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     modalOverlay.classList.remove("hidden");
   }
+
   function closeModal() {
     modalOverlay.classList.add("hidden");
   }
+
   document.getElementById("modal-close").addEventListener("click", closeModal);
-  modalOverlay.addEventListener("click", (e) => { if (e.target === modalOverlay) closeModal(); });
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) closeModal();
+  });
 
   /* =========================================================
      DASHBOARD
@@ -221,6 +226,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       { label: "Saved Costing Sheets", value: DATA.estimates.length },
       { label: "Total Estimated Value", value: `${DATA.currentEstimate.currency} ${Math.round(estTotal).toLocaleString()}` }
     ];
+
     stats.forEach(s => {
       const box = document.createElement("div");
       box.className = "stat-box";
@@ -262,6 +268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function statusBadgeClass(status) {
     return { "Open": "badge-open", "In Progress": "badge-progress", "Blocked": "badge-blocked", "Delivered": "badge-delivered" }[status] || "badge-open";
   }
+
   function priorityBadgeClass(p) {
     return { High: "badge-high", Medium: "badge-medium", Low: "badge-low" }[p] || "badge-medium";
   }
@@ -296,7 +303,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       reqTbody.appendChild(tr);
     });
 
-    reqTbody.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => openRequirementModal(b.dataset.edit)));
+    reqTbody.querySelectorAll("[data-edit]").forEach(b =>
+      b.addEventListener("click", () => openRequirementModal(b.dataset.edit))
+    );
     reqTbody.querySelectorAll("[data-del]").forEach(b =>
       b.addEventListener("click", async () => {
         if (confirm("Delete this requirement?")) {
@@ -304,12 +313,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           await refreshData();
           renderRequirements();
         }
-      }));
+      })
+    );
   }
 
   function openRequirementModal(id) {
     const existing = id ? DATA.requirements.find(r => r.id === id) : null;
-    const r = existing || { id: null, project: "", title: "", stakeholder: "", role: "Project Manager", priority: "Medium", status: "Open", due: "", notes: "" };
+    const r = existing || {
+      id: null, project: "", title: "", stakeholder: "",
+      role: "Project Manager", priority: "Medium", status: "Open", due: "", notes: ""
+    };
 
     const bodyHtml = `
       <label>Project<input type="text" id="f-project" value="${escapeAttr(r.project)}" placeholder="e.g. Jebel Ali Pump Station"/></label>
@@ -317,17 +330,18 @@ document.addEventListener("DOMContentLoaded", async () => {
       <label>Stakeholder Name<input type="text" id="f-stakeholder" value="${escapeAttr(r.stakeholder)}" placeholder="e.g. Ahmed Al Farsi"/></label>
       <label>Stakeholder Role
         <select id="f-role">
-          ${["Project Manager","Control System Engineer","Client","Estimation Team","SCADA Engineer","Other"].map(role => `<option ${r.role === role ? "selected" : ""}>${role}</option>`).join("")}
+          ${["Project Manager","Control System Engineer","Client","Estimation Team","SCADA Engineer","Other"]
+            .map(role => `<option ${r.role === role ? "selected" : ""}>${role}</option>`).join("")}
         </select>
       </label>
       <label>Priority
         <select id="f-priority">
-          ${["High","Medium","Low"].map(p => `<option ${r.priority===p?"selected":""}>${p}</option>`).join("")}
+          ${["High","Medium","Low"].map(p => `<option ${r.priority === p ? "selected" : ""}>${p}</option>`).join("")}
         </select>
       </label>
       <label>Status
         <select id="f-status">
-          ${REQ_STATUSES.map(s => `<option ${r.status===s?"selected":""}>${s}</option>`).join("")}
+          ${REQ_STATUSES.map(s => `<option ${r.status === s ? "selected" : ""}>${s}</option>`).join("")}
         </select>
       </label>
       <label>Due Date<input type="date" id="f-due" value="${r.due || ""}"/></label>
@@ -340,10 +354,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
         {
-          label: "Save", className: "btn btn-primary", onClick: async () => {
+          label: "Save",
+          className: "btn btn-primary",
+          onClick: async () => {
             const title = document.getElementById("f-title").value.trim();
-            if (!title) { alert("Requirement description is required."); return; }
-            
+            if (!title) {
+              alert("Requirement description is required.");
+              return;
+            }
             const updated = {
               id: r.id || crypto.randomUUID(),
               project: document.getElementById("f-project").value.trim(),
@@ -355,7 +373,6 @@ document.addEventListener("DOMContentLoaded", async () => {
               due: document.getElementById("f-due").value,
               notes: document.getElementById("f-notes").value.trim()
             };
-            
             await DB.put("requirements", updated);
             await refreshData();
             closeModal();
@@ -368,14 +385,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* =========================================================
-     ENTERPRISE COST ESTIMATION ENGINE (Multi-Phase & Templates)
+     ENTERPRISE COST ESTIMATION ENGINE
      ========================================================= */
   const estNameEl = document.getElementById("est-name");
   const estClientEl = document.getElementById("est-client");
   const estCurrencyEl = document.getElementById("est-currency");
   const estContingencyEl = document.getElementById("est-contingency");
   const estMarginEl = document.getElementById("est-margin");
-  
+
   const hrsDesignEl = document.getElementById("hrs-design");
   const rateDesignEl = document.getElementById("rate-design");
   const hrsProgEl = document.getElementById("hrs-prog");
@@ -386,7 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const rateSatEl = document.getElementById("rate-sat");
   const hrsSupervisionEl = document.getElementById("hrs-supervision");
   const rateSupervisionEl = document.getElementById("rate-supervision");
-  
+
   const boqTbody = document.getElementById("boq-tbody");
   const costSummaryEl = document.getElementById("cost-summary");
   const estimatesTbody = document.getElementById("estimates-tbody");
@@ -414,7 +431,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         DATA.currentEstimate.phases.fat.hours = tpl.hours.fat || 0;
         DATA.currentEstimate.phases.sat.hours = tpl.hours.sat || 0;
         DATA.currentEstimate.phases.supervision.hours = tpl.hours.supervision || 0;
-        
         saveDraft();
         renderEstimation();
       }
@@ -424,8 +440,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("add-boq-row").addEventListener("click", () => {
     const defaultCategory = getCategoryLabels()[0];
     DATA.currentEstimate.boq.push({
-      id: crypto.randomUUID(), category: defaultCategory, catalogSku: "",
-      description: "", qty: 1, unit: getUnitsForCategory(defaultCategory)[0], unitCost: 0
+      id: crypto.randomUUID(),
+      category: defaultCategory,
+      catalogSku: "",
+      description: "",
+      qty: 1,
+      unit: getUnitsForCategory(defaultCategory)[0],
+      unitCost: 0
     });
     saveDraft();
     renderBoqTable();
@@ -439,14 +460,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderEstimation();
   });
 
-document.getElementById("print-estimate-btn").addEventListener("click", () => {
+  // ========== CORRECTED PDF BUTTON ==========
+  document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    if (!e.boq.length && e.phases.design.hours === 0) {
+    const t = calcTotals(e);
+
+    if (!e.boq.length && t.totalHours === 0) {
       alert("Please add BOQ line items or engineering hours before generating the quotation PDF.");
       return;
     }
-    window.AGC.PDF.generateCostEstimationPdf(e, calcTotals(e));
+
+    if (!window.AGC || !window.AGC.PDF || typeof window.AGC.PDF.generateCostEstimationPdf !== "function") {
+      alert("PDF module is not loaded yet. Please refresh the page and try again.");
+      return;
+    }
+
+    window.AGC.PDF.generateCostEstimationPdf(e, t);
   });
 
   function syncEstimateFromForm() {
@@ -456,7 +486,7 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     if (estCurrencyEl) e.currency = estCurrencyEl.value;
     if (estContingencyEl) e.contingency = parseFloat(estContingencyEl.value) || 0;
     if (estMarginEl) e.margin = parseFloat(estMarginEl.value) || 0;
-    
+
     e.phases = {
       design: { hours: parseFloat(hrsDesignEl?.value) || 0, rate: parseFloat(rateDesignEl?.value) || 320 },
       programming: { hours: parseFloat(hrsProgEl?.value) || 0, rate: parseFloat(rateProgEl?.value) || 280 },
@@ -468,28 +498,24 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
 
   function calcTotals(estimate) {
     const boqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
-    
     const p = estimate.phases || {};
-    const engCost = 
+    const engCost =
       ((p.design?.hours || 0) * (p.design?.rate || 320)) +
       ((p.programming?.hours || 0) * (p.programming?.rate || 280)) +
       ((p.fat?.hours || 0) * (p.fat?.rate || 260)) +
       ((p.sat?.hours || 0) * (p.sat?.rate || 300)) +
       ((p.supervision?.hours || 0) * (p.supervision?.rate || 350));
-
-    const totalHours = 
-      (p.design?.hours || 0) + 
-      (p.programming?.hours || 0) + 
-      (p.fat?.hours || 0) + 
-      (p.sat?.hours || 0) + 
+    const totalHours =
+      (p.design?.hours || 0) +
+      (p.programming?.hours || 0) +
+      (p.fat?.hours || 0) +
+      (p.sat?.hours || 0) +
       (p.supervision?.hours || 0);
-
     const subtotal = boqTotal + engCost;
     const contingencyAmt = subtotal * ((estimate.contingency || 0) / 100);
     const afterContingency = subtotal + contingencyAmt;
     const marginAmt = afterContingency * ((estimate.margin || 0) / 100);
     const grandTotal = afterContingency + marginAmt;
-    
     return { boqTotal, engCost, totalHours, subtotal, contingencyAmt, marginAmt, grandTotal };
   }
 
@@ -498,29 +524,32 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const boq = DATA.currentEstimate.boq;
     const categories = getCategoryLabels();
     boqTbody.innerHTML = "";
-    
+
     boq.forEach(item => {
       const catalogItems = getCatalogItemsForCategory(item.category);
       const units = getUnitsForCategory(item.category);
-
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
           <select data-field="category" data-id="${item.id}">
-            ${categories.map(c => `<option ${item.category===c?"selected":""}>${c}</option>`).join("")}
+            ${categories.map(c => `<option ${item.category === c ? "selected" : ""}>${c}</option>`).join("")}
           </select>
         </td>
         <td>
           <select data-field="catalogSku" data-id="${item.id}" ${catalogItems.length ? "" : "disabled"}>
             <option value="">${catalogItems.length ? "— Select catalog item —" : "No catalog items"}</option>
-            ${catalogItems.map(ci => `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku===ci.sku?"selected":""}>${escapeHtml(ci.vendor)} —${escapeHtml(ci.description)}</option>`).join("")}
+            ${catalogItems.map(ci =>
+              `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku === ci.sku ? "selected" : ""}>
+                ${escapeHtml(ci.vendor)} — ${escapeHtml(ci.description)}
+              </option>`
+            ).join("")}
           </select>
         </td>
         <td><input type="text" class="boq-input" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description"/></td>
         <td><input type="number" class="boq-input" data-field="qty" data-id="${item.id}" value="${item.qty}" min="0" step="1"/></td>
         <td>
           <select data-field="unit" data-id="${item.id}">
-            ${units.map(u => `<option ${item.unit===u?"selected":""}>${u}</option>`).join("")}
+            ${units.map(u => `<option ${item.unit === u ? "selected" : ""}>${u}</option>`).join("")}
           </select>
         </td>
         <td><input type="number" class="boq-input" data-field="unitCost" data-id="${item.id}" value="${item.unitCost}" min="0" step="0.01"/></td>
@@ -530,7 +559,9 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
       boqTbody.appendChild(tr);
     });
 
-    boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el => el.addEventListener("change", handleBoqCatalogSelect));
+    boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el =>
+      el.addEventListener("change", handleBoqCatalogSelect)
+    );
     boqTbody.querySelectorAll("[data-field]:not([data-field='catalogSku'])").forEach(el => {
       el.addEventListener("input", handleBoqFieldChange);
       el.addEventListener("change", handleBoqFieldChange);
@@ -538,8 +569,11 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     boqTbody.querySelectorAll("[data-del-boq]").forEach(b =>
       b.addEventListener("click", () => {
         DATA.currentEstimate.boq = DATA.currentEstimate.boq.filter(i => i.id !== b.dataset.delBoq);
-        saveDraft(); renderBoqTable(); renderCostSummary();
-      }));
+        saveDraft();
+        renderBoqTable();
+        renderCostSummary();
+      })
+    );
   }
 
   function handleBoqCatalogSelect(e) {
@@ -547,7 +581,6 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const sku = e.target.value;
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
-
     item.catalogSku = sku;
     if (sku) {
       const catalogItems = getCatalogItemsForCategory(item.category);
@@ -557,7 +590,9 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
         item.unitCost = Number(match.unitCost) || 0;
       }
     }
-    saveDraft(); renderBoqTable(); renderCostSummary();
+    saveDraft();
+    renderBoqTable();
+    renderCostSummary();
   }
 
   function handleBoqFieldChange(e) {
@@ -565,7 +600,6 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const field = e.target.dataset.field;
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
-
     if (field === "category") {
       item.category = e.target.value;
       item.catalogSku = "";
@@ -575,7 +609,9 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     } else {
       item[field] = e.target.value;
     }
-    saveDraft(); renderBoqTable(); renderCostSummary();
+    saveDraft();
+    renderBoqTable();
+    renderCostSummary();
   }
 
   function renderCostSummary() {
@@ -585,7 +621,9 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     costSummaryEl.innerHTML = `
       <div class="row"><span>Materials Subtotal (BOQ)</span><span>${fmtMoney(t.boqTotal, e.currency)}</span></div>
       <div class="row"><span>Engineering Subtotal (${t.totalHours} total hrs)</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
-      <div class="row" style="font-weight:700; border-top:1px solid var(--slate-700); padding-top:6px;"><span>Combined Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span></div>
+      <div class="row" style="font-weight:700; border-top:1px solid var(--slate-700); padding-top:6px;">
+        <span>Combined Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span>
+      </div>
       <div class="row"><span>Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
       <div class="row"><span>Net Profit Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
       <div class="row grand-total"><span>Grand Total</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
@@ -597,13 +635,14 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
   async function saveCurrentEstimate() {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    if (!e.name.trim()) { alert("Please name this costing sheet before saving."); return; }
+    if (!e.name.trim()) {
+      alert("Please name this costing sheet before saving.");
+      return;
+    }
     e.savedAt = new Date().toISOString();
     if (!e.id) e.id = crypto.randomUUID();
-
     await DB.put("estimates", JSON.parse(JSON.stringify(e)));
     DATA.estimates = await DB.getAll("estimates");
-    
     renderEstimatesTable();
     renderDashboard();
     alert("Costing sheet saved to database successfully.");
@@ -627,24 +666,28 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
       `;
       estimatesTbody.appendChild(tr);
     });
-    
+
     estimatesTbody.querySelectorAll("[data-load-est]").forEach(b =>
       b.addEventListener("click", () => {
         const found = DATA.estimates.find(x => x.id === b.dataset.loadEst);
         if (found) {
           DATA.currentEstimate = JSON.parse(JSON.stringify(found));
-          saveDraft(); renderEstimation();
+          saveDraft();
+          renderEstimation();
         }
-      }));
-      
+      })
+    );
+
     estimatesTbody.querySelectorAll("[data-del-est]").forEach(b =>
       b.addEventListener("click", async () => {
         if (confirm("Delete this saved costing sheet?")) {
           await DB.delete("estimates", b.dataset.delEst);
           DATA.estimates = await DB.getAll("estimates");
-          renderEstimatesTable(); renderDashboard();
+          renderEstimatesTable();
+          renderDashboard();
         }
-      }));
+      })
+    );
   }
 
   function renderEstimation() {
@@ -658,16 +701,12 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const p = e.phases || {};
     if (hrsDesignEl) hrsDesignEl.value = p.design?.hours || 0;
     if (rateDesignEl) rateDesignEl.value = p.design?.rate || 320;
-    
     if (hrsProgEl) hrsProgEl.value = p.programming?.hours || 0;
     if (rateProgEl) rateProgEl.value = p.programming?.rate || 280;
-    
     if (hrsFatEl) hrsFatEl.value = p.fat?.hours || 0;
     if (rateFatEl) rateFatEl.value = p.fat?.rate || 260;
-    
     if (hrsSatEl) hrsSatEl.value = p.sat?.hours || 0;
     if (rateSatEl) rateSatEl.value = p.sat?.rate || 300;
-    
     if (hrsSupervisionEl) hrsSupervisionEl.value = p.supervision?.hours || 0;
     if (rateSupervisionEl) rateSupervisionEl.value = p.supervision?.rate || 350;
 
@@ -684,7 +723,10 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
 
   function openTaskModal(id) {
     const existing = id ? DATA.tasks.find(t => t.id === id) : null;
-    const t = existing || { id: null, title: "", project: "", owner: "", team: "Programming Team", phase: "Design", notes: "" };
+    const t = existing || {
+      id: null, title: "", project: "", owner: "",
+      team: "Programming Team", phase: "Design", notes: ""
+    };
 
     const bodyHtml = `
       <label>Task Title<input type="text" id="k-title" value="${escapeAttr(t.title)}" placeholder="e.g. Configure Modbus TCP driver"/></label>
@@ -692,12 +734,13 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
       <label>Owner<input type="text" id="k-owner" value="${escapeAttr(t.owner)}" placeholder="Assigned engineer"/></label>
       <label>Team
         <select id="k-team">
-          ${["Design Team","Programming Team","Panel Shop","Commissioning Team","Client Team","QA/FAT Team"].map(tm => `<option ${t.team===tm?"selected":""}>${tm}</option>`).join("")}
+          ${["Design Team","Programming Team","Panel Shop","Commissioning Team","Client Team","QA/FAT Team"]
+            .map(tm => `<option ${t.team === tm ? "selected" : ""}>${tm}</option>`).join("")}
         </select>
       </label>
       <label>Phase
         <select id="k-phase">
-          ${PHASES.map(p => `<option ${t.phase===p?"selected":""}>${p}</option>`).join("")}
+          ${PHASES.map(p => `<option ${t.phase === p ? "selected" : ""}>${p}</option>`).join("")}
         </select>
       </label>
       <label>Notes<textarea id="k-notes" rows="3">${escapeHtml(t.notes || "")}</textarea></label>
@@ -709,10 +752,14 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
         {
-          label: "Save", className: "btn btn-primary", onClick: async () => {
+          label: "Save",
+          className: "btn btn-primary",
+          onClick: async () => {
             const title = document.getElementById("k-title").value.trim();
-            if (!title) { alert("Task title is required."); return; }
-            
+            if (!title) {
+              alert("Task title is required.");
+              return;
+            }
             const updated = {
               id: t.id || crypto.randomUUID(),
               title,
@@ -722,7 +769,6 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
               phase: document.getElementById("k-phase").value,
               notes: document.getElementById("k-notes").value.trim()
             };
-            
             await DB.put("kanban", updated);
             await refreshData();
             closeModal();
@@ -740,7 +786,6 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const idx = PHASES.indexOf(t.phase);
     const newIdx = idx + direction;
     if (newIdx < 0 || newIdx >= PHASES.length) return;
-    
     t.phase = PHASES[newIdx];
     await DB.put("kanban", t);
     await refreshData();
@@ -752,32 +797,41 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
   function renderKanban() {
     if (!kanbanBoard) return;
     kanbanBoard.innerHTML = "";
+
     PHASES.forEach(phase => {
       const col = document.createElement("div");
       col.className = "kanban-col";
       col.dataset.phase = phase;
-
       const tasksInPhase = DATA.tasks.filter(t => t.phase === phase);
+
       col.innerHTML = `
-        <div class="kanban-col-header"><span>${phase}</span><span class="kanban-count">${tasksInPhase.length}</span></div>
+        <div class="kanban-col-header">
+          <span>${phase}</span>
+          <span class="kanban-count">${tasksInPhase.length}</span>
+        </div>
         <div class="kanban-cards" data-phase="${phase}"></div>
       `;
 
       const cardsWrap = col.querySelector(".kanban-cards");
+
       tasksInPhase.forEach(t => {
         const card = document.createElement("div");
         card.className = "kanban-card";
         card.draggable = true;
         card.dataset.id = t.id;
         const phaseIdx = PHASES.indexOf(t.phase);
+
         card.innerHTML = `
           <div class="kc-title">${escapeHtml(t.title)}</div>
           <div>${escapeHtml(t.project || "")}</div>
-          <div class="kc-meta"><span>${escapeHtml(t.team)}</span><span>${escapeHtml(t.owner || "Unassigned")}</span></div>
+          <div class="kc-meta">
+            <span>${escapeHtml(t.team)}</span>
+            <span>${escapeHtml(t.owner || "Unassigned")}</span>
+          </div>
           <div class="kc-actions">
             <span>
-              <button class="btn-icon" data-move-left ${phaseIdx===0?"disabled":""} title="Move back">◀</button>
-              <button class="btn-icon" data-move-right ${phaseIdx===PHASES.length-1?"disabled":""} title="Move forward">▶</button>
+              <button class="btn-icon" data-move-left ${phaseIdx === 0 ? "disabled" : ""} title="Move back">◀</button>
+              <button class="btn-icon" data-move-right ${phaseIdx === PHASES.length - 1 ? "disabled" : ""} title="Move forward">▶</button>
             </span>
             <span>
               <button class="btn-icon" data-edit-task title="Edit">✎</button>
@@ -786,8 +840,11 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
           </div>
         `;
 
-        card.addEventListener("dragstart", () => { dragTaskId = t.id; card.classList.add("dragging"); });
-        card.addEventListener("dragend", () => { card.classList.remove("dragging"); });
+        card.addEventListener("dragstart", () => {
+          dragTaskId = t.id;
+          card.classList.add("dragging");
+        });
+        card.addEventListener("dragend", () => card.classList.remove("dragging"));
 
         card.querySelector("[data-move-left]").addEventListener("click", () => moveTask(t.id, -1));
         card.querySelector("[data-move-right]").addEventListener("click", () => moveTask(t.id, 1));
@@ -803,7 +860,10 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
         cardsWrap.appendChild(card);
       });
 
-      col.addEventListener("dragover", (e) => { e.preventDefault(); col.classList.add("drag-over"); });
+      col.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        col.classList.add("drag-over");
+      });
       col.addEventListener("dragleave", () => col.classList.remove("drag-over"));
       col.addEventListener("drop", async (e) => {
         e.preventDefault();
@@ -831,7 +891,7 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `agc-scada-hub-export-${new Date().toISOString().slice(0,10)}.json`;
+    a.download = `agc-scada-hub-export-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   });
@@ -845,19 +905,23 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
         <p style="color:var(--slate-400); font-size:0.8rem; margin-top:4px;">
           Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE
         </p>
-        <p style="margin-top:14px; font-size:0.85rem;">All data is stored locally on this device (IndexedDB) so the app works fully offline on-site. Use <em>Export</em> to back up or transfer your data.</p>
-        <button class="btn btn-danger" id="clear-data-btn" style="margin-top:14px;">Clear All Local Database Content</button>
+        <p style="margin-top:14px; font-size:0.85rem;">
+          All data is stored locally on this device (IndexedDB) so the app works fully offline on-site.
+          Use <em>Export</em> to back up or transfer your data.
+        </p>
+        <button class="btn btn-danger" id="clear-data-btn" style="margin-top:14px;">
+          Clear All Local Database Content
+        </button>
       `,
       footerButtons: [{ label: "Close", className: "btn btn-primary", onClick: closeModal }]
     });
-    
+
     document.getElementById("clear-data-btn").addEventListener("click", async () => {
       if (confirm("This will permanently delete all locally stored database records on this device. Continue?")) {
         await Promise.all(DATA.requirements.map(r => DB.delete("requirements", r.id)));
         await Promise.all(DATA.tasks.map(t => DB.delete("kanban", t.id)));
         await Promise.all(DATA.estimates.map(e => DB.delete("estimates", e.id)));
         localStorage.removeItem("agc_draft_estimate");
-        
         DATA.currentEstimate = newEstimate();
         await refreshData();
         closeModal();
@@ -867,18 +931,27 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
   });
 
   /* =========================================================
-     INTEGRATIONS: CSV export, PDF generation, ClickUp/n8n sync
+     INTEGRATIONS
      ========================================================= */
   document.getElementById("export-csv-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    if (!e.boq.length) { alert("Add at least one BOQ line item before exporting."); return; }
+    if (!e.boq.length) {
+      alert("Add at least one BOQ line item before exporting.");
+      return;
+    }
     window.AGC.Export.exportBoqToCsv(e, calcTotals(e));
   });
 
   document.getElementById("generate-req-pdf-btn").addEventListener("click", () => {
-    if (!DATA.requirements.length) { alert("Log at least one requirement before generating the specification PDF."); return; }
-    window.AGC.PDF.generateRequirementsPdf(document.getElementById("requirements-table"), { preparedBy: "AGC SCADA Hub" });
+    if (!DATA.requirements.length) {
+      alert("Log at least one requirement before generating the specification PDF.");
+      return;
+    }
+    window.AGC.PDF.generateRequirementsPdf(
+      document.getElementById("requirements-table"),
+      { preparedBy: "AGC SCADA Hub" }
+    );
   });
 
   document.getElementById("webhook-settings-btn").addEventListener("click", openWebhookSettingsModal);
@@ -891,14 +964,22 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
       title: "Webhook Settings",
       bodyHtml: `
         <p style="font-size:0.82rem; color:var(--slate-400); margin-bottom:12px;">
-          Paste in your ClickUp automation webhook and/or n8n Webhook node URL. These are stored only on this device.
+          Paste in your ClickUp automation webhook and/or n8n Webhook node URL.
+          These are stored only on this device.
         </p>
-        <label>ClickUp Webhook URL<input type="text" id="w-clickup" value="${escapeAttr(cfg.clickup || "")}"/></label>
-        <label>n8n Webhook URL<input type="text" id="w-n8n" value="${escapeAttr(cfg.n8n || "")}"/></label>
+        <label>ClickUp Webhook URL
+          <input type="text" id="w-clickup" value="${escapeAttr(cfg.clickup || "")}"/>
+        </label>
+        <label>n8n Webhook URL
+          <input type="text" id="w-n8n" value="${escapeAttr(cfg.n8n || "")}"/>
+        </label>
       `,
       footerButtons: [
         { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
-        { label: "Save", className: "btn btn-primary", onClick: () => {
+        {
+          label: "Save",
+          className: "btn btn-primary",
+          onClick: () => {
             window.AGC.Api.saveWebhookConfig({
               clickup: document.getElementById("w-clickup").value.trim(),
               n8n: document.getElementById("w-n8n").value.trim()
@@ -911,14 +992,24 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
   }
 
   async function syncBoard(target) {
-    if (!DATA.tasks.length) { alert("No execution tasks to sync yet."); return; }
+    if (!DATA.tasks.length) {
+      alert("No execution tasks to sync yet.");
+      return;
+    }
     const cfg = window.AGC.Api.getWebhookConfig();
-    if (target === "clickup" && !cfg.clickup) { openWebhookSettingsModal(); return; }
-    if (target === "n8n" && !cfg.n8n) { openWebhookSettingsModal(); return; }
+    if (target === "clickup" && !cfg.clickup) {
+      openWebhookSettingsModal();
+      return;
+    }
+    if (target === "n8n" && !cfg.n8n) {
+      openWebhookSettingsModal();
+      return;
+    }
 
     const btn = document.getElementById(target === "clickup" ? "sync-clickup-btn" : "sync-n8n-btn");
     const originalLabel = btn.textContent;
-    btn.disabled = true; btn.textContent = "Syncing…";
+    btn.disabled = true;
+    btn.textContent = "Syncing…";
 
     try {
       if (target === "n8n") {
@@ -931,12 +1022,18 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
           if (result.ok) successCount++;
         }
         reportSyncResult(
-          { ok: successCount === DATA.tasks.length, error: successCount < DATA.tasks.length ? `${DATA.tasks.length - successCount} task(s) failed.` : null },
+          {
+            ok: successCount === DATA.tasks.length,
+            error: successCount < DATA.tasks.length
+              ? `${DATA.tasks.length - successCount} task(s) failed.`
+              : null
+          },
           `${successCount}/${DATA.tasks.length} task(s) synced to ClickUp.`
         );
       }
     } finally {
-      btn.disabled = false; btn.textContent = originalLabel;
+      btn.disabled = false;
+      btn.textContent = originalLabel;
     }
   }
 
@@ -945,7 +1042,7 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
     else alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe locally.`);
   }
 
-  /* ---------------- Init Execution ---------------- */
+  /* ---------------- Init ---------------- */
   function renderAll() {
     renderDashboard();
     renderRequirements();
@@ -955,13 +1052,15 @@ document.getElementById("print-estimate-btn").addEventListener("click", () => {
 
   updateOnlineStatus();
   renderAll();
-  
+
   await loadCatalog();
   if (document.getElementById("panel-estimation").classList.contains("active")) {
     renderEstimation();
   }
 
   if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => navigator.serviceWorker.register("service-worker.js").catch(e => {}));
+    window.addEventListener("load", () =>
+      navigator.serviceWorker.register("service-worker.js").catch(() => {})
+    );
   }
 });
