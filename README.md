@@ -103,3 +103,65 @@ agc-scada-hub/
 ├── package.json
 ├── LICENSE
 └── README.md
+```
+
+---
+
+## 🚀 Getting Started (Local Development)
+
+No build tools required. Just serve the folder over HTTP (service workers require HTTP/HTTPS):
+
+```bash
+npx serve .
+```
+
+Then open the printed local URL (e.g. `http://localhost:3000`) in your browser.
+
+---
+
+## ☁️ Deploying to GitHub Pages
+
+This repo includes a ready-to-go GitHub Actions workflow (`.github/workflows/deploy.yml`) that automatically deploys on every push to `main`.
+
+1. Push your code to the `main` branch.
+2. In the repository go to **Settings → Pages** and set **Source** to **GitHub Actions**.
+3. The app will be published at:
+
+```
+https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/
+```
+
+---
+
+## 📱 Installing as an App
+
+- **Android (Chrome):** Open the site → ⋮ menu → **Install app**
+- **iOS (Safari):** Share → **Add to Home Screen**
+- **Desktop (Chrome/Edge):** Click the install icon in the address bar
+
+Once installed, the app opens full-screen and works fully offline.
+
+---
+
+## 🔒 Data & Privacy
+
+All data (requirements, I/O tags, costing sheets, execution tasks, punchlist, FDS documents) is stored **only on your local device** using **IndexedDB**.  
+Nothing is sent to any server.
+
+Use the **Export** button in the header to download a full JSON backup at any time.
+
+To reset the app: **⚙ Settings → Clear All Local Data**.
+
+---
+
+## 🏢 About
+
+**Al Gurg Automation and Controls**  
+Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira  
+PO Box 25490, Dubai, UAE
+
+---
+
+## 📄 License
+
+MIT — see [LICENSE](LICENSE).
