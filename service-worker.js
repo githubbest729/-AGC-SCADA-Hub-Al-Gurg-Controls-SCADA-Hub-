@@ -4,12 +4,10 @@
    on-site with poor or no connectivity.
    ========================================================= */
 
-const CACHE_VERSION = "agc-scada-hub-v1.1.0";
+const CACHE_VERSION = "agc-scada-hub-v1.2.0";
 const CACHE_NAME = `${CACHE_VERSION}`;
 
 // Files that make up the app shell — cached on install.
-// Paths are relative so this works whether the app is hosted
-// at the domain root or in a GitHub Pages subpath (/repo-name/).
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -19,9 +17,13 @@ const APP_SHELL = [
   "./icons/icon-192x192.png",
   "./icons/icon-512x512.png",
   "./data/boq-catalog.json",
+  "./data/io-summary-template.json",
+  "./data/fat-sat-checklist.json",
+  "./data/uae-cost-config.json",
   "./scripts/export.js",
   "./scripts/pdf-generator.js",
-  "./scripts/api.js"
+  "./scripts/api.js",
+  "./scripts/punchlist.js"
 ];
 
 // Third-party assets cached opportunistically (best-effort — install
@@ -47,21 +49,6 @@ self.addEventListener("install", (event) => {
   );
 });
 
-// ---- Fetch: intercept network requests ----
-self.addEventListener('fetch', (event) => {
-  // Fix for the Chrome Extension error
-  if (!event.request.url.startsWith('http')) {
-    return;
-  }
-
-  // The rest of your fetch logic goes inside event.respondWith
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
-    })
-  );
-});
-
 // ---- Activate: clean up old caches ----
 self.addEventListener("activate", (event) => {
   event.waitUntil(
@@ -75,12 +62,15 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// ---- Fetch: cache-first for app shell, network-first fallback for everything else ----
+// ---- Fetch: intercept network requests ----
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  // Only handle GET requests
+  // 1. Only handle GET requests
   if (request.method !== "GET") return;
+
+  // 2. Fix for the Chrome Extension error: Ignore non-http/https requests
+  if (!request.url.startsWith('http')) return;
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
