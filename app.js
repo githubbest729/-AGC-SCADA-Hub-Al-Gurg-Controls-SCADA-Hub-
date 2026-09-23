@@ -124,6 +124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ---------------- Utilities ---------------- */
   function fmtMoney(n, currency) {
     const val = isFinite(n) ? n : 0;
+    // Uses strict 2-decimal formatting globally for the UI
     return `${currency || DATA.currentEstimate.currency} ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
@@ -177,9 +178,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Every non-dashboard panel has a "← Dashboard" button (in case the
-  // tab bar has scrolled out of the visible area on a small screen).
-  // It just re-uses the real tab button so behavior stays identical.
   document.querySelectorAll("[data-goto-tab]").forEach(btn => {
     btn.addEventListener("click", () => {
       const target = document.querySelector(`.tab-btn[data-tab="${btn.dataset.gotoTab}"]`);
@@ -188,11 +186,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Keep the sticky tab bar's offset matched to the header's real,
-  // on-device height (it can grow with safe-area insets or if the
-  // header text wraps) — otherwise the tab bar sticks partway behind
-  // the header once scrolled and every tab, including the way back
-  // to Dashboard, becomes invisible/unclickable.
   function syncHeaderHeight() {
     const header = document.querySelector(".app-header");
     if (header) {
@@ -411,7 +404,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* =========================================================
-     ENTERPRISE COST ESTIMATION ENGINE
+     ENTERPRISE COST ESTIMATION ENGINE (Updated Commercial Math)
      ========================================================= */
   const estNameEl = document.getElementById("est-name");
   const estClientEl = document.getElementById("est-client");
@@ -446,7 +439,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
   });
 
-  // Template loader buttons
   document.querySelectorAll("[data-template]").forEach(btn => {
     btn.addEventListener("click", () => {
       const type = btn.dataset.template;
@@ -486,11 +478,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderEstimation();
   });
 
-  // ========== CORRECTED PDF BUTTON ==========
+  // Generate Quotation PDF
   document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    const t = calcTotals(e);
+    const t = calcTotals(e); // This now includes VAT and markupFactor
 
     if (!e.boq.length && t.totalHours === 0) {
       alert("Please add BOQ line items or engineering hours before generating the quotation PDF.");
@@ -522,27 +514,51 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
+  // --- REFACTORED ENTERPRISE PRICING MATH ---
   function calcTotals(estimate) {
-    const boqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
+    // 1. Calculate Raw Base Costs
+    const rawBoqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
     const p = estimate.phases || {};
-    const engCost =
+    const rawEngCost =
       ((p.design?.hours || 0) * (p.design?.rate || 320)) +
       ((p.programming?.hours || 0) * (p.programming?.rate || 280)) +
       ((p.fat?.hours || 0) * (p.fat?.rate || 260)) +
       ((p.sat?.hours || 0) * (p.sat?.rate || 300)) +
       ((p.supervision?.hours || 0) * (p.supervision?.rate || 350));
+    
     const totalHours =
       (p.design?.hours || 0) +
       (p.programming?.hours || 0) +
       (p.fat?.hours || 0) +
       (p.sat?.hours || 0) +
       (p.supervision?.hours || 0);
-    const subtotal = boqTotal + engCost;
-    const contingencyAmt = subtotal * ((estimate.contingency || 0) / 100);
-    const afterContingency = subtotal + contingencyAmt;
-    const marginAmt = afterContingency * ((estimate.margin || 0) / 100);
-    const grandTotal = afterContingency + marginAmt;
-    return { boqTotal, engCost, totalHours, subtotal, contingencyAmt, marginAmt, grandTotal };
+
+    const rawSubtotal = rawBoqTotal + rawEngCost;
+
+    // 2. Commercial Strategy (Bake contingency & margin into the selling price)
+    const contingencyMultiplier = 1 + ((estimate.contingency || 0) / 100);
+    const marginDivisor = 1 - ((estimate.margin || 0) / 100);
+    const costWithContingency = rawSubtotal * contingencyMultiplier;
+    
+    // Total selling price (Internal margins are applied invisibly here)
+    const sellingSubtotal = marginDivisor > 0 ? (costWithContingency / marginDivisor) : costWithContingency;
+
+    // 3. Apportion Selling Prices to BOQ and Engineering based on weight
+    const markupFactor = rawSubtotal > 0 ? (sellingSubtotal / rawSubtotal) : 1;
+    const sellingBoqTotal = rawBoqTotal * markupFactor;
+    const sellingEngCost = rawEngCost * markupFactor;
+
+    // 4. VAT Compliance
+    const vatAmount = sellingSubtotal * 0.05; // 5% UAE VAT
+    const grandTotal = sellingSubtotal + vatAmount;
+
+    return { 
+      rawBoqTotal, rawEngCost, totalHours, rawSubtotal, 
+      markupFactor, sellingBoqTotal, sellingEngCost, sellingSubtotal, 
+      vatAmount, grandTotal,
+      contingencyAmt: costWithContingency - rawSubtotal,
+      marginAmt: sellingSubtotal - costWithContingency
+    };
   }
 
   function renderBoqTable() {
@@ -566,7 +582,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             <option value="">${catalogItems.length ? "— Select catalog item —" : "No catalog items"}</option>
             ${catalogItems.map(ci =>
               `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku === ci.sku ? "selected" : ""}>
-                ${escapeHtml(ci.vendor)} — ${escapeHtml(ci.description)}
+                ${escapeHtml(ci.vendor)} —${escapeHtml(ci.description)}
               </option>`
             ).join("")}
           </select>
@@ -640,19 +656,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCostSummary();
   }
 
+  // Reflecting Internal vs Client-Facing costs
   function renderCostSummary() {
     if (!costSummaryEl) return;
     const e = DATA.currentEstimate;
     const t = calcTotals(e);
     costSummaryEl.innerHTML = `
-      <div class="row"><span>Materials Subtotal (BOQ)</span><span>${fmtMoney(t.boqTotal, e.currency)}</span></div>
-      <div class="row"><span>Engineering Subtotal (${t.totalHours} total hrs)</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
-      <div class="row" style="font-weight:700; border-top:1px solid var(--slate-700); padding-top:6px;">
-        <span>Combined Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span>
+      <div class="row muted" style="font-size: 0.85em"><span>Raw Materials Cost</span><span>${fmtMoney(t.rawBoqTotal, e.currency)}</span></div>
+      <div class="row muted" style="font-size: 0.85em"><span>Raw Engineering Cost (${t.totalHours} hrs)</span><span>${fmtMoney(t.rawEngCost, e.currency)}</span></div>
+      <div class="row" style="font-weight:600; border-top:1px dashed var(--slate-600); padding-top:4px;">
+        <span>Internal Base Cost</span><span>${fmtMoney(t.rawSubtotal, e.currency)}</span>
       </div>
-      <div class="row"><span>Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
-      <div class="row"><span>Net Profit Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
-      <div class="row grand-total"><span>Grand Total</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
+      <div class="row" style="color:var(--orange-400)"><span>+ Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
+      <div class="row" style="color:var(--emerald-400)"><span>+ Net Profit Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
+      
+      <div class="row" style="font-weight:700; border-top:2px solid var(--slate-700); padding-top:6px; margin-top:6px;">
+        <span>Client Selling Subtotal</span><span>${fmtMoney(t.sellingSubtotal, e.currency)}</span>
+      </div>
+      <div class="row"><span>VAT (5%)</span><span>${fmtMoney(t.vatAmount, e.currency)}</span></div>
+      <div class="row grand-total" style="font-size: 1.1em;"><span>Grand Total (Incl. VAT)</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
       <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:12px;">💾 Save Costing Sheet to Database</button>
     `;
     document.getElementById("save-estimate-btn").addEventListener("click", saveCurrentEstimate);
