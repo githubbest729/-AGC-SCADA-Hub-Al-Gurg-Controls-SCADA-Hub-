@@ -47,6 +47,21 @@ self.addEventListener("install", (event) => {
   );
 });
 
+// ---- Fetch: intercept network requests ----
+self.addEventListener('fetch', (event) => {
+  // Fix for the Chrome Extension error
+  if (!event.request.url.startsWith('http')) {
+    return;
+  }
+
+  // The rest of your fetch logic goes inside event.respondWith
+  event.respondWith(
+    caches.match(event.request).then((response) => {
+      return response || fetch(event.request);
+    })
+  );
+});
+
 // ---- Activate: clean up old caches ----
 self.addEventListener("activate", (event) => {
   event.waitUntil(
