@@ -23,6 +23,22 @@
 
 * { box-sizing: border-box; }
 
+/* --- ENTERPRISE FIX: Accessibility & OS Preference --- */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --- ENTERPRISE FIX: Keyboard Navigation Focus Rings --- */
+:focus-visible {
+  outline: 2px solid var(--electric-blue);
+  outline-offset: 2px;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -127,11 +143,6 @@ p { margin: 0; }
   border-bottom: 1px solid var(--slate-800);
   padding: 0 16px;
   position: sticky;
-  /* --header-h is measured and set in app.js so this never sits under
-     the header (a hardcoded value drifted on devices where the header
-     wraps to two lines or grows with a safe-area inset, which hid the
-     whole tab row — including the way back to Dashboard — behind the
-     header once the page was scrolled). 58px is just a same-page fallback. */
   top: var(--header-h, 58px);
   z-index: 19;
 }
@@ -162,7 +173,7 @@ p { margin: 0; }
 .hint-text { color: var(--slate-400); font-size: 0.8rem; margin-bottom: 14px; }
 .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
-/* ---- Back-to-Dashboard control (every non-dashboard panel) ---- */
+/* ---- Back-to-Dashboard control ---- */
 .panel-title-group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
 .btn-back {
   background: transparent;
@@ -217,22 +228,17 @@ p { margin: 0; }
 }
 .card h3 { font-size: 0.95rem; margin-bottom: 10px; color: var(--electric-blue); }
 
-/* ---- Dashboard (CLS FIX) ---- */
-#panel-dashboard {
-  min-height: 480px; /* prevents layout jump */
-}
-
+/* ---- Dashboard ---- */
+#panel-dashboard { min-height: 480px; }
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 18px;
-  min-height: 110px; /* reserves space for stats */
+  min-height: 110px; 
 }
-
-/* Reserve space on the box itself so it holds height even before JS fills it */
 .stat-box {
-  min-height: 84px; /* bumped from 74 → matches real content height (padding+value+label) more closely */
+  min-height: 84px; 
   background: var(--slate-900);
   border: 1px solid var(--slate-800);
   border-left: 4px solid var(--electric-blue);
@@ -241,21 +247,20 @@ p { margin: 0; }
 }
 .stat-box .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--white); }
 .stat-box .stat-label { font-size: 0.75rem; color: var(--slate-400); margin-top: 4px; }
-
 .dash-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-  /* space reserved per-card via .mini-list min-height below —
-     adapts correctly whether the grid renders 1, 2, or 3 columns */
 }
-/* This is the key fix: reserve space per-card, not per-grid.
-   Works correctly whether the grid renders 1, 2, or 3 columns. */
 .mini-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;  min-height: 160px;}
 .mini-list .mini-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--slate-800); padding-bottom: 6px; }
 .mini-list .muted { color: var(--slate-400); }
 
 /* ---- Filters / inputs ---- */
+/* --- ENTERPRISE FIX: Normalize Form Fonts --- */
+input, select, textarea, button {
+  font-family: inherit;
+}
 .filter-row { display: flex; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
 input[type="text"], input[type="number"], input[type="date"], select, textarea {
   background: var(--slate-800);
@@ -377,7 +382,7 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .modal-body { padding: 16px 18px; overflow-y: auto; }
 .modal-footer { padding: 14px 18px; border-top: 1px solid var(--slate-800); display: flex; justify-content: flex-end; gap: 10px; }
 
-/* ---- Footer (CONTRAST FIX) ---- */
+/* ---- Footer ---- */
 .app-footer {
   background: var(--slate-950);
   border-top: 1px solid var(--slate-800);
@@ -388,7 +393,7 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 }
 .footer-sub {
   margin-top: 4px;
-  color: #94a3b8; /* Fixed: now passes 4.5:1 contrast ratio */
+  color: #94a3b8;
 }
 
 /* ---- Dark scrollbar ---- */
@@ -417,6 +422,12 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .io-badge-internal { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
 
 @media print {
+  /* --- ENTERPRISE FIX: Force Background Colors to Print --- */
+  * { 
+    -webkit-print-color-adjust: exact !important; 
+    print-color-adjust: exact !important; 
+  }
+
   .app-header, 
   .tab-bar, 
   .app-footer, 
