@@ -4,7 +4,7 @@
    ========================================================= */
 
 const DB_NAME = "AGC_SCADA_DB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 const DB = {
   db: null,
@@ -43,6 +43,9 @@ const DB = {
         }
         if (!db.objectStoreNames.contains("kanban")) {
           db.createObjectStore("kanban", { keyPath: "id" });
+        }
+        if (!db.objectStoreNames.contains("io_tags")) {
+          db.createObjectStore("io_tags", { keyPath: "id" });
         }
       };
     });
@@ -93,9 +96,19 @@ const DB = {
     if (existing.length > 0) return; // Only seed if empty
 
     console.log("Seeding initial database...");
-    for (const req of jsonData.requirements) await this.put("requirements", req);
-    for (const snag of jsonData.punchlist) await this.put("punchlist", snag);
-    for (const task of jsonData.kanban) await this.put("kanban", task);
-    await this.put("projects", jsonData.projectInfo);
+    
+    // SAFE LOOPS: Checks if the data exists before looping
+    if (jsonData.requirements) {
+      for (const req of jsonData.requirements) await this.put("requirements", req);
+    }
+    if (jsonData.punchlist) {
+      for (const snag of jsonData.punchlist) await this.put("punchlist", snag);
+    }
+    if (jsonData.kanban) {
+      for (const task of jsonData.kanban) await this.put("kanban", task);
+    }
+    if (jsonData.projectInfo) {
+      await this.put("projects", jsonData.projectInfo);
+    }
   }
 };
