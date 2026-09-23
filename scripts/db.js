@@ -1,10 +1,13 @@
 /* =========================================================
-   scripts/db.js
-   Vanilla JS IndexedDB Wrapper for AGC SCADA Hub
+   AGC SCADA Hub — scripts/db.js
+   Enterprise Vanilla JS IndexedDB Wrapper
+   Includes Background Sync Queue for offline data resilience.
    ========================================================= */
 
 const DB_NAME = "AGC_SCADA_DB";
-const DB_VERSION = 2;
+// IMPORTANT: Bumped to version 3 to trigger the database upgrade 
+// and create the new "sync_queue" table automatically.
+const DB_VERSION = 3; 
 
 const DB = {
   db: null,
@@ -46,6 +49,11 @@ const DB = {
         }
         if (!db.objectStoreNames.contains("io_tags")) {
           db.createObjectStore("io_tags", { keyPath: "id" });
+        }
+
+        // ---> ENTERPRISE OFFLINE QUEUE TABLE <---
+        if (!db.objectStoreNames.contains("sync_queue")) {
+          db.createObjectStore("sync_queue", { keyPath: "id" });
         }
       };
     });
