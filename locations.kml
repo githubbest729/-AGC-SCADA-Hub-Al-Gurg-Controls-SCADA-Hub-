@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>Al Gurg Automation and Controls</name>
+    <description>SCADA Hub - Engineering Workspace</description>
+    <Point>
+      <coordinates>55.3350,25.2680,0</coordinates>
+    </Point>
+  </Placemark>
+</kml>
