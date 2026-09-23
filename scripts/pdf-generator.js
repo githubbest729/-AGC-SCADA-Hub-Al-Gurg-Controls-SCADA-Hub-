@@ -204,7 +204,7 @@ window.AGC.PDF = (() => {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Force reliable download using html2pdf output blob & temporary anchor click
+    // Force reliable anchor click download on static hosting (GitHub Pages)
     html2pdf().from(container).set(opt).outputPdf('blob').then((pdfBlob) => {
       const blobUrl = URL.createObjectURL(pdfBlob);
       const downloadLink = document.createElement("a");
