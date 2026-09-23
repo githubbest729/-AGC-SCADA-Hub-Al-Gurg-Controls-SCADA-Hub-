@@ -439,7 +439,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderEstimation();
   });
 
-  document.getElementById("print-estimate-btn").addEventListener("click", () => {
+document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
     if (!e.boq.length && e.phases.design.hours === 0) {
