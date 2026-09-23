@@ -376,7 +376,33 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .io-badge-internal { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
 
 @media print {
-  .app-header, .tab-bar, .app-footer, .offline-banner, .panel-header-row button, #estimates-table, .card:has(#estimates-tbody), #save-estimate-btn { display: none !important; }
-  body { background: white; color: black; }
-  .card { border: 1px solid #ccc; box-shadow: none; }
+  .app-header, 
+  .tab-bar, 
+  .app-footer, 
+  .offline-banner, 
+  .panel-header-row button, 
+  #estimates-table, 
+  .card:has(#estimates-tbody),
+  #save-estimate-btn,
+  button { 
+    display: none !important; 
+  }
+  
+  body { 
+    background: white !important; 
+    color: black !important; 
+  }
+  
+  .card { 
+    border: 1px solid #ccc !important; 
+    box-shadow: none !important; 
+    background: white !important;
+  }
+
+  input, select {
+    border: none !important;
+    background: transparent !important;
+    color: black !important;
+    font-weight: 600;
+  }
 }
