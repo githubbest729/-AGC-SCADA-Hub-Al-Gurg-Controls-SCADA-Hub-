@@ -82,7 +82,7 @@ window.AGC.PDF = (() => {
 
     let hasEngineering = false;
     const engRows = phasesList.map((phase, index) => {
-      if (phase.hrs === 0) return ""; // Skip empty phases
+      if (phase.hrs === 0) return ""; 
       hasEngineering = true;
       const sellingRate = phase.rate * markup;
       const sellingTotal = phase.hrs * sellingRate;
@@ -228,24 +228,25 @@ window.AGC.PDF = (() => {
         <!-- Footer -->
         <div style="border-top:1px solid #cbd5e1;padding-top:10px;display:flex;justify-content:space-between;font-size:8pt;color:#64748b;page-break-inside:avoid;break-inside:avoid;">
           <span>Confidential — Al Gurg Automation &amp; Controls</span>
-          <!-- html2pdf handles the pagination dynamically if we allow it below, but keeping it generic for now -->
           <span>Generated via AGC SCADA Hub</span>
         </div>
       </div>
     `;
 
-    // Create a temporary element and put the HTML inside
+    // 1. Create container
     const container = document.createElement("div");
     container.innerHTML = htmlContent;
-    container.style.position = "fixed";
-    container.style.left = "0";
-    container.style.top = "0";
-    container.style.zIndex = "99999";
+    
+    // 2. ENTERPRISE UX FIX: Render strictly OFF-SCREEN to avoid UI flash
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
+    container.style.visibility = "hidden";
     container.style.background = "#ffffff";
     document.body.appendChild(container);
 
-    // Give the browser a moment to render
-    setTimeout(() => {
+    // Yield thread to allow DOM to paint the invisible element
+    requestAnimationFrame(() => {
       const element = container.firstElementChild;
 
       const opt = {
@@ -262,25 +263,22 @@ window.AGC.PDF = (() => {
         pagebreak:    { mode: ["avoid-all", "css"] }
       };
 
+      // 3. Generate PDF and use .finally() for guaranteed cleanup
       html2pdf()
         .set(opt)
         .from(element)
         .save()
-        .then(() => {
-          setTimeout(() => {
-            if (document.body.contains(container)) {
-              document.body.removeChild(container);
-            }
-          }, 1500);
-        })
         .catch(err => {
           console.error("PDF generation failed:", err);
           alert("Could not generate PDF. Please try again.");
-          if (document.body.contains(container)) {
-            document.body.removeChild(container);
+        })
+        .finally(() => {
+          // Guaranteed removal, preventing zombie DOM nodes
+          if (container && document.body.contains(container)) {
+            container.remove();
           }
         });
-    }, 300); // small delay so the DOM is painted
+    });
   }
 
   function generateRequirementsPdf(tableElement, options = {}) {
@@ -334,10 +332,11 @@ window.AGC.PDF = (() => {
 
     container.appendChild(tableClone);
     
-    container.style.position = "fixed";
-    container.style.left = "0";
-    container.style.top = "0";
-    container.style.zIndex = "99999";
+    // ENTERPRISE UX FIX: Render strictly OFF-SCREEN
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "-9999px";
+    container.style.visibility = "hidden";
     document.body.appendChild(container);
 
     const opt = {
@@ -349,19 +348,21 @@ window.AGC.PDF = (() => {
       pagebreak:    { mode: ["avoid-all", "css"] }
     };
 
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       html2pdf()
         .set(opt)
         .from(container)
         .save()
-        .then(() => {
-          if (document.body.contains(container)) document.body.removeChild(container);
-        })
         .catch(err => {
-          console.error(err);
-          if (document.body.contains(container)) document.body.removeChild(container);
+          console.error("PDF generation failed:", err);
+          alert("Could not generate Requirements PDF.");
+        })
+        .finally(() => {
+          if (container && document.body.contains(container)) {
+            container.remove();
+          }
         });
-    }, 300);
+    });
   }
 
   return {
