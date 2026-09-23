@@ -177,6 +177,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // Every non-dashboard panel has a "← Dashboard" button (in case the
+  // tab bar has scrolled out of the visible area on a small screen).
+  // It just re-uses the real tab button so behavior stays identical.
+  document.querySelectorAll("[data-goto-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = document.querySelector(`.tab-btn[data-tab="${btn.dataset.gotoTab}"]`);
+      if (target) target.click();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+
+  // Keep the sticky tab bar's offset matched to the header's real,
+  // on-device height (it can grow with safe-area insets or if the
+  // header text wraps) — otherwise the tab bar sticks partway behind
+  // the header once scrolled and every tab, including the way back
+  // to Dashboard, becomes invisible/unclickable.
+  function syncHeaderHeight() {
+    const header = document.querySelector(".app-header");
+    if (header) {
+      document.documentElement.style.setProperty("--header-h", `${header.offsetHeight}px`);
+    }
+  }
+  syncHeaderHeight();
+  window.addEventListener("resize", syncHeaderHeight);
+  window.addEventListener("orientationchange", syncHeaderHeight);
+
   /* ---------------- Modal helper ---------------- */
   const modalOverlay = document.getElementById("modal-overlay");
   const modalTitle = document.getElementById("modal-title");
