@@ -209,7 +209,7 @@ window.AGC.PDF = (() => {
           <div style="width:45%;border-top:1px solid #94a3b8;padding-top:6px;color:#475569;line-height:1.3;">
             <strong>Prepared By:</strong><br>
             <span style="color:#0f172a;font-weight:600;">Christian Tosita Espinosa</span><br>
-            I&amp;C Engineer | Al Gurg Automation &amp; Controls
+            SCADA Engineer | Al Gurg Automation &amp; Controls
           </div>
           <div style="width:45%;border-top:1px solid #94a3b8;padding-top:6px;color:#475569;">
             <strong>Approved By (Client):</strong><br>
