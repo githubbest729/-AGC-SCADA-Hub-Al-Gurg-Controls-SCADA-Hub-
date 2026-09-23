@@ -1,6 +1,6 @@
 /* =========================================================
    AGC SCADA Hub — app.js
-   Vanilla JS SPA logic (Upgraded to IndexedDB)
+   Vanilla JS SPA logic (Upgraded to IndexedDB & Multi-Phase Costing)
    Tabs, requirements matrix, cost estimation engine, 
    execution kanban board, offline handling.
    ========================================================= */
@@ -55,10 +55,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       name: "",
       client: "",
       currency: "AED",
-      rate: 150,
       contingency: 10,
       margin: 15,
-      engHours: 0,
+      hours: { design: 0, programming: 0, fat: 0, sat: 0, commissioning: 0 },
       boq: [],
       savedAt: null
     };
@@ -368,47 +367,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* =========================================================
-     COST ESTIMATION ENGINE
+     COST ESTIMATION ENGINE (Multi-Phase Engineering & IndexedDB)
      ========================================================= */
   const estNameEl = document.getElementById("est-name");
   const estClientEl = document.getElementById("est-client");
   const estCurrencyEl = document.getElementById("est-currency");
-  const estRateEl = document.getElementById("est-rate");
-  const estRoleEl = document.getElementById("est-role");
   const estContingencyEl = document.getElementById("est-contingency");
   const estMarginEl = document.getElementById("est-margin");
-  const estEngHoursEl = document.getElementById("est-eng-hours");
+  
+  const hrsDesignEl = document.getElementById("hrs-design");
+  const hrsProgEl = document.getElementById("hrs-prog");
+  const hrsFatEl = document.getElementById("hrs-fat");
+  const hrsSatEl = document.getElementById("hrs-sat");
+  const hrsCommEl = document.getElementById("hrs-comm");
+  
   const boqTbody = document.getElementById("boq-tbody");
   const costSummaryEl = document.getElementById("cost-summary");
   const estimatesTbody = document.getElementById("estimates-tbody");
 
-  [estNameEl, estClientEl, estCurrencyEl, estRateEl, estContingencyEl, estMarginEl, estEngHoursEl].forEach(el => {
+  [estNameEl, estClientEl, estCurrencyEl, estContingencyEl, estMarginEl, hrsDesignEl, hrsProgEl, hrsFatEl, hrsSatEl, hrsCommEl].forEach(el => {
+    if (!el) return;
     el.addEventListener("input", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
     el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
   });
-
-  estRoleEl.addEventListener("change", () => {
-    const rates = getEngineeringRates();
-    const match = rates.find(r => r.role === estRoleEl.value);
-    if (match) {
-      estRateEl.value = match.hourlyRate;
-      syncEstimateFromForm();
-      renderCostSummary();
-      saveDraft();
-    }
-  });
-
-  function populateRoleDropdown() {
-    const rates = getEngineeringRates();
-    if (!rates.length) {
-      estRoleEl.innerHTML = `<option value="">Catalog not loaded</option>`;
-      estRoleEl.disabled = true;
-      return;
-    }
-    estRoleEl.disabled = false;
-    estRoleEl.innerHTML = `<option value="">— Custom rate —</option>` +
-      rates.map(r => `<option value="${escapeAttr(r.role)}">${escapeHtml(r.role)} (${fmtMoney(r.hourlyRate, (CATALOG && CATALOG.currency) || "AED")}/hr)</option>`).join("");
-  }
 
   document.getElementById("add-boq-row").addEventListener("click", () => {
     const defaultCategory = getCategoryLabels()[0];
@@ -435,27 +416,51 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function syncEstimateFromForm() {
     const e = DATA.currentEstimate;
-    e.name = estNameEl.value;
-    e.client = estClientEl.value;
-    e.currency = estCurrencyEl.value;
-    e.rate = parseFloat(estRateEl.value) || 0;
-    e.contingency = parseFloat(estContingencyEl.value) || 0;
-    e.margin = parseFloat(estMarginEl.value) || 0;
-    e.engHours = parseFloat(estEngHoursEl.value) || 0;
+    if (estNameEl) e.name = estNameEl.value;
+    if (estClientEl) e.client = estClientEl.value;
+    if (estCurrencyEl) e.currency = estCurrencyEl.value;
+    if (estContingencyEl) e.contingency = parseFloat(estContingencyEl.value) || 0;
+    if (estMarginEl) e.margin = parseFloat(estMarginEl.value) || 0;
+    
+    e.hours = {
+      design: parseFloat(hrsDesignEl?.value) || 0,
+      programming: parseFloat(hrsProgEl?.value) || 0,
+      fat: parseFloat(hrsFatEl?.value) || 0,
+      sat: parseFloat(hrsSatEl?.value) || 0,
+      commissioning: parseFloat(hrsCommEl?.value) || 0
+    };
+  }
+
+  function getRateForRole(roleName) {
+    const rates = getEngineeringRates();
+    const match = rates.find(r => r.role === roleName);
+    return match ? match.hourlyRate : 150;
   }
 
   function calcTotals(estimate) {
     const boqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
-    const engCost = (estimate.engHours || 0) * (estimate.rate || 0);
+    
+    const h = estimate.hours || {};
+    const designCost = (h.design || 0) * getRateForRole("Senior SCADA / Control Systems Engineer");
+    const progCost = (h.programming || 0) * getRateForRole("SCADA Engineer");
+    const fatCost = (h.fat || 0) * getRateForRole("Project Engineer");
+    const satCost = (h.sat || 0) * getRateForRole("Commissioning Engineer");
+    const commCost = (h.commissioning || 0) * getRateForRole("Commissioning Engineer");
+    
+    const engCost = designCost + progCost + fatCost + satCost + commCost;
+    const totalHours = (h.design || 0) + (h.programming || 0) + (h.fat || 0) + (h.sat || 0) + (h.commissioning || 0);
+
     const subtotal = boqTotal + engCost;
     const contingencyAmt = subtotal * ((estimate.contingency || 0) / 100);
     const afterContingency = subtotal + contingencyAmt;
     const marginAmt = afterContingency * ((estimate.margin || 0) / 100);
     const grandTotal = afterContingency + marginAmt;
-    return { boqTotal, engCost, subtotal, contingencyAmt, marginAmt, grandTotal };
+    
+    return { boqTotal, engCost, totalHours, subtotal, contingencyAmt, marginAmt, grandTotal };
   }
 
   function renderBoqTable() {
+    if (!boqTbody) return;
     const boq = DATA.currentEstimate.boq;
     const categories = getCategoryLabels();
     boqTbody.innerHTML = "";
@@ -477,7 +482,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ${catalogItems.map(ci => `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku===ci.sku?"selected":""}>${escapeHtml(ci.vendor)} —${escapeHtml(ci.description)}</option>`).join("")}
           </select>
         </td>
-        <td><input type="text" class="boq-input" style="min-width:140px" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description / tag name"/></td>
+        <td><input type="text" class="boq-input" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description"/></td>
         <td><input type="number" class="boq-input" data-field="qty" data-id="${item.id}" value="${item.qty}" min="0" step="1"/></td>
         <td>
           <select data-field="unit" data-id="${item.id}">
@@ -499,21 +504,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     boqTbody.querySelectorAll("[data-del-boq]").forEach(b =>
       b.addEventListener("click", () => {
         DATA.currentEstimate.boq = DATA.currentEstimate.boq.filter(i => i.id !== b.dataset.delBoq);
-        saveDraft();
-        renderBoqTable();
-        renderCostSummary();
+        saveDraft(); renderBoqTable(); renderCostSummary();
       }));
-  }
-
-  function handleBoqCategoryChange(id, newCategory) {
-    const item = DATA.currentEstimate.boq.find(i => i.id === id);
-    if (!item) return;
-    item.category = newCategory;
-    item.catalogSku = "";
-    item.unit = getUnitsForCategory(newCategory)[0];
-    saveDraft();
-    renderBoqTable();
-    renderCostSummary();
   }
 
   function handleBoqCatalogSelect(e) {
@@ -531,43 +523,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         item.unitCost = Number(match.unitCost) || 0;
       }
     }
-    saveDraft();
-    renderBoqTable();
-    renderCostSummary();
+    saveDraft(); renderBoqTable(); renderCostSummary();
   }
 
   function handleBoqFieldChange(e) {
     const id = e.target.dataset.id;
     const field = e.target.dataset.field;
-
-    if (field === "category") {
-      handleBoqCategoryChange(id, e.target.value);
-      return;
-    }
-
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
-    if (field === "qty" || field === "unitCost") {
+
+    if (field === "category") {
+      item.category = e.target.value;
+      item.catalogSku = "";
+      item.unit = getUnitsForCategory(e.target.value)[0];
+    } else if (field === "qty" || field === "unitCost") {
       item[field] = parseFloat(e.target.value) || 0;
     } else {
       item[field] = e.target.value;
     }
-    saveDraft();
-    renderBoqTable();
-    renderCostSummary();
+    saveDraft(); renderBoqTable(); renderCostSummary();
   }
 
   function renderCostSummary() {
+    if (!costSummaryEl) return;
     const e = DATA.currentEstimate;
     const t = calcTotals(e);
     costSummaryEl.innerHTML = `
       <div class="row"><span>BOQ Materials Subtotal</span><span>${fmtMoney(t.boqTotal, e.currency)}</span></div>
-      <div class="row"><span>Engineering Hours (${e.engHours} hrs × ${fmtMoney(e.rate, e.currency)})</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
+      <div class="row"><span>Engineering Services Total (${t.totalHours} hrs across phases)</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
       <div class="row"><span>Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span></div>
       <div class="row"><span>Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
       <div class="row"><span>Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
       <div class="row grand-total"><span>Grand Total</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
-      <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:10px;">💾 Save Costing Sheet to Database</button>
+      <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:12px;">💾 Save Costing Sheet to Database</button>
     `;
     document.getElementById("save-estimate-btn").addEventListener("click", saveCurrentEstimate);
   }
@@ -579,16 +567,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.savedAt = new Date().toISOString();
     if (!e.id) e.id = crypto.randomUUID();
 
-    const clone = JSON.parse(JSON.stringify(e));
-    await DB.put("estimates", clone); // Save to IndexedDB
-    await refreshData();
+    await DB.put("estimates", JSON.parse(JSON.stringify(e)));
+    DATA.estimates = await DB.getAll("estimates");
     
     renderEstimatesTable();
     renderDashboard();
-    alert("Costing sheet saved to database.");
+    alert("Costing sheet saved to database successfully.");
   }
 
   function renderEstimatesTable() {
+    if (!estimatesTbody) return;
     estimatesTbody.innerHTML = "";
     DATA.estimates.forEach(e => {
       const t = calcTotals(e);
@@ -599,44 +587,46 @@ document.addEventListener("DOMContentLoaded", async () => {
         <td>${fmtMoney(t.grandTotal, e.currency)}</td>
         <td>${fmtDate(e.savedAt)}</td>
         <td>
-          <button class="btn-icon" data-load="${e.id}" title="Load into editor">📂</button>
+          <button class="btn-icon" data-load-est="${e.id}" title="Load into editor">📂</button>
           <button class="btn-icon" data-del-est="${e.id}" title="Delete">🗑</button>
         </td>
       `;
       estimatesTbody.appendChild(tr);
     });
     
-    estimatesTbody.querySelectorAll("[data-load]").forEach(b =>
+    estimatesTbody.querySelectorAll("[data-load-est]").forEach(b =>
       b.addEventListener("click", () => {
-        const found = DATA.estimates.find(x => x.id === b.dataset.load);
+        const found = DATA.estimates.find(x => x.id === b.dataset.loadEst);
         if (found) {
           DATA.currentEstimate = JSON.parse(JSON.stringify(found));
-          saveDraft();
-          renderEstimation();
+          saveDraft(); renderEstimation();
         }
       }));
       
     estimatesTbody.querySelectorAll("[data-del-est]").forEach(b =>
       b.addEventListener("click", async () => {
         if (confirm("Delete this saved costing sheet?")) {
-          await DB.delete("estimates", b.dataset.delEst); // Delete from IndexedDB
-          await refreshData();
-          renderEstimatesTable();
-          renderDashboard();
+          await DB.delete("estimates", b.dataset.delEst);
+          DATA.estimates = await DB.getAll("estimates");
+          renderEstimatesTable(); renderDashboard();
         }
       }));
   }
 
   function renderEstimation() {
     const e = DATA.currentEstimate;
-    estNameEl.value = e.name || "";
-    estClientEl.value = e.client || "";
-    estCurrencyEl.value = e.currency || "AED";
-    estRateEl.value = e.rate;
-    estContingencyEl.value = e.contingency;
-    estMarginEl.value = e.margin;
-    estEngHoursEl.value = e.engHours;
-    populateRoleDropdown();
+    if (estNameEl) estNameEl.value = e.name || "";
+    if (estClientEl) estClientEl.value = e.client || "";
+    if (estCurrencyEl) estCurrencyEl.value = e.currency || "AED";
+    if (estContingencyEl) estContingencyEl.value = e.contingency;
+    if (estMarginEl) estMarginEl.value = e.margin;
+
+    if (hrsDesignEl) hrsDesignEl.value = e.hours?.design || 0;
+    if (hrsProgEl) hrsProgEl.value = e.hours?.programming || 0;
+    if (hrsFatEl) hrsFatEl.value = e.hours?.fat || 0;
+    if (hrsSatEl) hrsSatEl.value = e.hours?.sat || 0;
+    if (hrsCommEl) hrsCommEl.value = e.hours?.commissioning || 0;
+
     renderBoqTable();
     renderCostSummary();
     renderEstimatesTable();
@@ -689,7 +679,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               notes: document.getElementById("k-notes").value.trim()
             };
             
-            await DB.put("kanban", updated); // Save to IndexedDB
+            await DB.put("kanban", updated);
             await refreshData();
             closeModal();
             renderKanban();
@@ -708,7 +698,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (newIdx < 0 || newIdx >= PHASES.length) return;
     
     t.phase = PHASES[newIdx];
-    await DB.put("kanban", t); // Update in IndexedDB
+    await DB.put("kanban", t);
     await refreshData();
     renderKanban();
   }
@@ -716,6 +706,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let dragTaskId = null;
 
   function renderKanban() {
+    if (!kanbanBoard) return;
     kanbanBoard.innerHTML = "";
     PHASES.forEach(phase => {
       const col = document.createElement("div");
@@ -759,7 +750,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         card.querySelector("[data-edit-task]").addEventListener("click", () => openTaskModal(t.id));
         card.querySelector("[data-del-task]").addEventListener("click", async () => {
           if (confirm("Delete this task?")) {
-            await DB.delete("kanban", t.id); // Delete from IndexedDB
+            await DB.delete("kanban", t.id);
             await refreshData();
             renderKanban();
           }
@@ -777,7 +768,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const t = DATA.tasks.find(x => x.id === dragTaskId);
           if (t) {
             t.phase = phase;
-            await DB.put("kanban", t); // Update dropped task in DB
+            await DB.put("kanban", t);
             await refreshData();
             renderKanban();
           }
@@ -818,7 +809,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     document.getElementById("clear-data-btn").addEventListener("click", async () => {
       if (confirm("This will permanently delete all locally stored database records on this device. Continue?")) {
-        // Clear all IndexedDB stores safely
         await Promise.all(DATA.requirements.map(r => DB.delete("requirements", r.id)));
         await Promise.all(DATA.tasks.map(t => DB.delete("kanban", t.id)));
         await Promise.all(DATA.estimates.map(e => DB.delete("estimates", e.id)));
@@ -925,8 +915,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadCatalog();
   if (document.getElementById("panel-estimation").classList.contains("active")) {
     renderEstimation();
-  } else {
-    populateRoleDropdown();
   }
 
   if ("serviceWorker" in navigator) {
