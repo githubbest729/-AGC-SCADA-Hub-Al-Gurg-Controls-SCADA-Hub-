@@ -1,6 +1,6 @@
 /* =========================================================
    AGC SCADA Hub — app.js
-   Vanilla JS SPA logic (Upgraded to IndexedDB & Multi-Phase Costing)
+   Enterprise Vanilla JS SPA logic (IndexedDB & Multi-Phase Costing)
    Tabs, requirements matrix, cost estimation engine, 
    execution kanban board, offline handling.
    ========================================================= */
@@ -57,7 +57,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       currency: "AED",
       contingency: 10,
       margin: 15,
-      hours: { design: 0, programming: 0, fat: 0, sat: 0, commissioning: 0 },
+      phases: {
+        design: { hours: 0, rate: 320 },
+        programming: { hours: 0, rate: 280 },
+        fat: { hours: 0, rate: 260 },
+        sat: { hours: 0, rate: 300 },
+        supervision: { hours: 0, rate: 350 }
+      },
       boq: [],
       savedAt: null
     };
@@ -116,11 +122,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const cat = CATALOG.categories.find(c => c.label === categoryLabel);
       if (cat) return cat.items || [];
     }
-    return [];
-  }
-
-  function getEngineeringRates() {
-    if (CATALOG && CATALOG.engineeringRates && Array.isArray(CATALOG.engineeringRates.rates)) return CATALOG.engineeringRates.rates;
     return [];
   }
 
@@ -367,7 +368,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* =========================================================
-     COST ESTIMATION ENGINE (Multi-Phase Engineering & IndexedDB)
+     ENTERPRISE COST ESTIMATION ENGINE (Multi-Phase & Templates)
      ========================================================= */
   const estNameEl = document.getElementById("est-name");
   const estClientEl = document.getElementById("est-client");
@@ -376,19 +377,48 @@ document.addEventListener("DOMContentLoaded", async () => {
   const estMarginEl = document.getElementById("est-margin");
   
   const hrsDesignEl = document.getElementById("hrs-design");
+  const rateDesignEl = document.getElementById("rate-design");
   const hrsProgEl = document.getElementById("hrs-prog");
+  const rateProgEl = document.getElementById("rate-prog");
   const hrsFatEl = document.getElementById("hrs-fat");
+  const rateFatEl = document.getElementById("rate-fat");
   const hrsSatEl = document.getElementById("hrs-sat");
-  const hrsCommEl = document.getElementById("hrs-comm");
+  const rateSatEl = document.getElementById("rate-sat");
+  const hrsSupervisionEl = document.getElementById("hrs-supervision");
+  const rateSupervisionEl = document.getElementById("rate-supervision");
   
   const boqTbody = document.getElementById("boq-tbody");
   const costSummaryEl = document.getElementById("cost-summary");
   const estimatesTbody = document.getElementById("estimates-tbody");
 
-  [estNameEl, estClientEl, estCurrencyEl, estContingencyEl, estMarginEl, hrsDesignEl, hrsProgEl, hrsFatEl, hrsSatEl, hrsCommEl].forEach(el => {
+  const estimateInputs = [
+    estNameEl, estClientEl, estCurrencyEl, estContingencyEl, estMarginEl,
+    hrsDesignEl, rateDesignEl, hrsProgEl, rateProgEl,
+    hrsFatEl, rateFatEl, hrsSatEl, rateSatEl, hrsSupervisionEl, rateSupervisionEl
+  ];
+
+  estimateInputs.forEach(el => {
     if (!el) return;
     el.addEventListener("input", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
     el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveDraft(); });
+  });
+
+  // Template loader buttons
+  document.querySelectorAll("[data-template]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const type = btn.dataset.template;
+      if (CATALOG && CATALOG.templates && CATALOG.templates[type]) {
+        const tpl = CATALOG.templates[type];
+        DATA.currentEstimate.phases.design.hours = tpl.hours.design || 0;
+        DATA.currentEstimate.phases.programming.hours = tpl.hours.programming || 0;
+        DATA.currentEstimate.phases.fat.hours = tpl.hours.fat || 0;
+        DATA.currentEstimate.phases.sat.hours = tpl.hours.sat || 0;
+        DATA.currentEstimate.phases.supervision.hours = tpl.hours.supervision || 0;
+        
+        saveDraft();
+        renderEstimation();
+      }
+    });
   });
 
   document.getElementById("add-boq-row").addEventListener("click", () => {
@@ -422,33 +452,32 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (estContingencyEl) e.contingency = parseFloat(estContingencyEl.value) || 0;
     if (estMarginEl) e.margin = parseFloat(estMarginEl.value) || 0;
     
-    e.hours = {
-      design: parseFloat(hrsDesignEl?.value) || 0,
-      programming: parseFloat(hrsProgEl?.value) || 0,
-      fat: parseFloat(hrsFatEl?.value) || 0,
-      sat: parseFloat(hrsSatEl?.value) || 0,
-      commissioning: parseFloat(hrsCommEl?.value) || 0
+    e.phases = {
+      design: { hours: parseFloat(hrsDesignEl?.value) || 0, rate: parseFloat(rateDesignEl?.value) || 320 },
+      programming: { hours: parseFloat(hrsProgEl?.value) || 0, rate: parseFloat(rateProgEl?.value) || 280 },
+      fat: { hours: parseFloat(hrsFatEl?.value) || 0, rate: parseFloat(rateFatEl?.value) || 260 },
+      sat: { hours: parseFloat(hrsSatEl?.value) || 0, rate: parseFloat(rateSatEl?.value) || 300 },
+      supervision: { hours: parseFloat(hrsSupervisionEl?.value) || 0, rate: parseFloat(rateSupervisionEl?.value) || 350 }
     };
-  }
-
-  function getRateForRole(roleName) {
-    const rates = getEngineeringRates();
-    const match = rates.find(r => r.role === roleName);
-    return match ? match.hourlyRate : 150;
   }
 
   function calcTotals(estimate) {
     const boqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
     
-    const h = estimate.hours || {};
-    const designCost = (h.design || 0) * getRateForRole("Senior SCADA / Control Systems Engineer");
-    const progCost = (h.programming || 0) * getRateForRole("SCADA Engineer");
-    const fatCost = (h.fat || 0) * getRateForRole("Project Engineer");
-    const satCost = (h.sat || 0) * getRateForRole("Commissioning Engineer");
-    const commCost = (h.commissioning || 0) * getRateForRole("Commissioning Engineer");
-    
-    const engCost = designCost + progCost + fatCost + satCost + commCost;
-    const totalHours = (h.design || 0) + (h.programming || 0) + (h.fat || 0) + (h.sat || 0) + (h.commissioning || 0);
+    const p = estimate.phases || {};
+    const engCost = 
+      ((p.design?.hours || 0) * (p.design?.rate || 320)) +
+      ((p.programming?.hours || 0) * (p.programming?.rate || 280)) +
+      ((p.fat?.hours || 0) * (p.fat?.rate || 260)) +
+      ((p.sat?.hours || 0) * (p.sat?.rate || 300)) +
+      ((p.supervision?.hours || 0) * (p.supervision?.rate || 350));
+
+    const totalHours = 
+      (p.design?.hours || 0) + 
+      (p.programming?.hours || 0) + 
+      (p.fat?.hours || 0) + 
+      (p.sat?.hours || 0) + 
+      (p.supervision?.hours || 0);
 
     const subtotal = boqTotal + engCost;
     const contingencyAmt = subtotal * ((estimate.contingency || 0) / 100);
@@ -549,11 +578,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const e = DATA.currentEstimate;
     const t = calcTotals(e);
     costSummaryEl.innerHTML = `
-      <div class="row"><span>BOQ Materials Subtotal</span><span>${fmtMoney(t.boqTotal, e.currency)}</span></div>
-      <div class="row"><span>Engineering Services Total (${t.totalHours} hrs across phases)</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
-      <div class="row"><span>Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span></div>
+      <div class="row"><span>Materials Subtotal (BOQ)</span><span>${fmtMoney(t.boqTotal, e.currency)}</span></div>
+      <div class="row"><span>Engineering Subtotal (${t.totalHours} total hrs)</span><span>${fmtMoney(t.engCost, e.currency)}</span></div>
+      <div class="row" style="font-weight:700; border-top:1px solid var(--slate-700); padding-top:6px;"><span>Combined Subtotal</span><span>${fmtMoney(t.subtotal, e.currency)}</span></div>
       <div class="row"><span>Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
-      <div class="row"><span>Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
+      <div class="row"><span>Net Profit Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
       <div class="row grand-total"><span>Grand Total</span><span>${fmtMoney(t.grandTotal, e.currency)}</span></div>
       <button class="btn btn-primary" id="save-estimate-btn" style="margin-top:12px;">💾 Save Costing Sheet to Database</button>
     `;
@@ -621,11 +650,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (estContingencyEl) estContingencyEl.value = e.contingency;
     if (estMarginEl) estMarginEl.value = e.margin;
 
-    if (hrsDesignEl) hrsDesignEl.value = e.hours?.design || 0;
-    if (hrsProgEl) hrsProgEl.value = e.hours?.programming || 0;
-    if (hrsFatEl) hrsFatEl.value = e.hours?.fat || 0;
-    if (hrsSatEl) hrsSatEl.value = e.hours?.sat || 0;
-    if (hrsCommEl) hrsCommEl.value = e.hours?.commissioning || 0;
+    const p = e.phases || {};
+    if (hrsDesignEl) hrsDesignEl.value = p.design?.hours || 0;
+    if (rateDesignEl) rateDesignEl.value = p.design?.rate || 320;
+    
+    if (hrsProgEl) hrsProgEl.value = p.programming?.hours || 0;
+    if (rateProgEl) rateProgEl.value = p.programming?.rate || 280;
+    
+    if (hrsFatEl) hrsFatEl.value = p.fat?.hours || 0;
+    if (rateFatEl) rateFatEl.value = p.fat?.rate || 260;
+    
+    if (hrsSatEl) hrsSatEl.value = p.sat?.hours || 0;
+    if (rateSatEl) rateSatEl.value = p.sat?.rate || 300;
+    
+    if (hrsSupervisionEl) hrsSupervisionEl.value = p.supervision?.hours || 0;
+    if (rateSupervisionEl) rateSupervisionEl.value = p.supervision?.rate || 350;
 
     renderBoqTable();
     renderCostSummary();
