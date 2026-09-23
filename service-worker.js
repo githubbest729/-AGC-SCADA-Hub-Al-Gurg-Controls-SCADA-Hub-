@@ -1,13 +1,13 @@
 /* =========================================================
    AGC SCADA Hub — service-worker.js
-   Caches the app shell so the PWA works fully offline
-   on-site with poor or no connectivity.
+   Enterprise Stale-While-Revalidate PWA Cache Engine
    ========================================================= */
 
-const CACHE_VERSION = "agc-scada-hub-v1.2.0";
+// Incrementing to 2.0.0 forces browsers to wipe the old broken cache
+const CACHE_VERSION = "agc-scada-hub-v2.0.0";
 const CACHE_NAME = `${CACHE_VERSION}`;
 
-// Files that make up the app shell — cached on install.
+// 1. CORE APP SHELL: Every single file required to boot the app offline.
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -16,40 +16,46 @@ const APP_SHELL = [
   "./manifest.json",
   "./icons/icon-192x192.png",
   "./icons/icon-512x512.png",
+  
+  // Data models
   "./data/boq-catalog.json",
-  "./data/io-summary-template.json",
-  "./data/fat-sat-checklist.json",
-  "./data/uae-cost-config.json",
+  "./data/sample-project.json",
+  "./data/io-tags-sample.json",
+  
+  // Scripts (CRITICAL: Added missing db.js and io-tags.js)
+  "./scripts/db.js",
   "./scripts/export.js",
   "./scripts/pdf-generator.js",
   "./scripts/api.js",
-  "./scripts/punchlist.js"
+  "./scripts/punchlist.js",
+  "./scripts/io-tags.js"
 ];
 
-// Third-party assets cached opportunistically (best-effort — install
-// should not fail if the CDN is briefly unreachable at install time).
+// 2. THIRD-PARTY ASSETS: Version strictly matches index.html
 const OPTIONAL_SHELL = [
-  "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js"
+  "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"
 ];
 
-// ---- Install: pre-cache the app shell ----
+// ---- Install: Pre-cache the app shell ----
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(async (cache) => {
         await cache.addAll(APP_SHELL);
-        // Best-effort: don't let a flaky CDN block install of the core app shell
+        
+        // Best-effort cache for CDN files using 'no-cors' to avoid opaque response blocking
         await Promise.all(
           OPTIONAL_SHELL.map((url) =>
-            cache.add(url).catch((err) => console.warn("Optional asset not cached:", url, err))
+            cache.add(new Request(url, { mode: 'no-cors' }))
+                 .catch((err) => console.warn(`[Service Worker] CDN asset skipped: ${url}`, err))
           )
         );
       })
-      .then(() => self.skipWaiting())
+      .then(() => self.skipWaiting()) // Force the waiting service worker to become the active service worker
   );
 });
 
-// ---- Activate: clean up old caches ----
+// ---- Activate: Clean up old caches ----
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
@@ -62,34 +68,35 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// ---- Fetch: intercept network requests ----
+// ---- Fetch: Intercept network requests (Stale-While-Revalidate) ----
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
-  // 1. Only handle GET requests
+  // Only intercept GET requests. POST requests (like our API sync) bypass the cache.
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-
-  // 2. Skip non-HTTP requests (like chrome-extension://) to prevent caching errors
   if (!url.protocol.startsWith('http')) return;
 
   event.respondWith(
-    caches.match(request).then((cachedResponse) => {
+    // Enterprise Fix: ignoreSearch prevents cache-misses if URLs have tracking/version query params
+    caches.match(request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
-        // Serve from cache immediately, and refresh the cache in the background.
+        // Serve instantly from cache, but update the cache in the background
         fetchAndUpdateCache(request);
         return cachedResponse;
       }
       
+      // If not in cache, fetch from network
       return fetch(request)
         .then((networkResponse) => {
           fetchAndUpdateCache(request);
           return networkResponse;
         })
         .catch(() => {
+          // If offline and file not cached, route SPA navigations back to index.html
           if (request.mode === "navigate") {
-            return caches.match("./index.html");
+            return caches.match("./index.html", { ignoreSearch: true });
           }
           return new Response("Offline and not cached.", {
             status: 503,
@@ -100,14 +107,15 @@ self.addEventListener("fetch", (event) => {
   );
 });
 
+// ---- Background Cache Updater ----
 function fetchAndUpdateCache(request) {
   const url = new URL(request.url);
-  // Double-check here to ensure background cache updates never touch non-http requests
   if (!url.protocol.startsWith('http')) return;
 
   fetch(request)
     .then((response) => {
-      if (response && response.status === 200 && response.type === "basic") {
+      // Enterprise Fix: Accept response.type === "opaque" so Cloudflare CDN scripts are cached properly
+      if (response && (response.status === 200 || response.type === "opaque")) {
         const clone = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
       }
