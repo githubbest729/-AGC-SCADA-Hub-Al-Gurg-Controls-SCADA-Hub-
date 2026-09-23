@@ -227,7 +227,7 @@
       <div class="btn-row">
         <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
         <button class="btn btn-ghost" id="export-csv-btn">⬇ Download CSV</button>
-        <button class="btn btn-primary" id="print-estimate-btn">Print / PDF</button>
+        <button class="btn btn-primary" id="print-estimate-btn">Print / PDF Summary</button>
       </div>
     </div>
 
@@ -236,8 +236,8 @@
         <label>Costing Sheet Name
           <input type="text" id="est-name" placeholder="e.g. Al Ain WTP - SCADA Upgrade" />
         </label>
-        <label>Client
-          <input type="text" id="est-client" placeholder="Client name" />
+        <label>Client / End User
+          <input type="text" id="est-client" placeholder="e.g. AADC" />
         </label>
         <label>Currency
           <select id="est-currency">
@@ -245,20 +245,34 @@
             <option value="USD">USD</option>
           </select>
         </label>
-        <label>Engineering Hourly Rate
-          <input type="number" id="est-rate" value="150" min="0" step="1" />
-        </label>
         <label>Contingency %
           <input type="number" id="est-contingency" value="10" min="0" step="1" />
         </label>
-        <label>Margin %
+        <label>Net Profit Margin %
           <input type="number" id="est-margin" value="15" min="0" step="1" />
+        </label>
+
+        <h3 style="margin-top: 15px; margin-bottom: 8px; font-size: 0.85rem; color: var(--electric-blue);">Engineering Phase Hours</h3>
+        <label>Design &amp; Architecture (Hrs)
+          <input type="number" id="hrs-design" value="0" min="0" step="1"/>
+        </label>
+        <label>PLC / SCADA Programming (Hrs)
+          <input type="number" id="hrs-prog" value="0" min="0" step="1"/>
+        </label>
+        <label>FAT Execution (Hrs)
+          <input type="number" id="hrs-fat" value="0" min="0" step="1"/>
+        </label>
+        <label>SAT &amp; Commissioning (Hrs)
+          <input type="number" id="hrs-sat" value="0" min="0" step="1"/>
+        </label>
+        <label>Site Supervision (Hrs)
+          <input type="number" id="hrs-comm" value="0" min="0" step="1"/>
         </label>
       </div>
 
       <div class="card est-boq-card">
         <div class="panel-header-row">
-          <h3>Bill of Quantities (BOQ)</h3>
+          <h3>Bill of Quantities (BOQ) &amp; Hardware Catalog</h3>
           <button class="btn btn-ghost btn-sm" id="add-boq-row">+ Add Line Item</button>
         </div>
         <div class="table-wrap">
@@ -279,21 +293,12 @@
           </table>
         </div>
 
-        <div class="eng-hours-row">
-          <label>Engineering Role (auto-fills hourly rate from catalog)
-            <select id="est-role"></select>
-          </label>
-          <label>Engineering Hours (Design/Programming/FAT/SAT)
-            <input type="number" id="est-eng-hours" value="0" min="0" step="1" />
-          </label>
-        </div>
-
         <div class="cost-summary" id="cost-summary"></div>
       </div>
     </div>
 
     <div class="card">
-      <h3>Saved Costing Sheets</h3>
+      <h3>Saved Costing Sheets (IndexedDB)</h3>
       <div class="table-wrap">
         <table class="data-table" id="estimates-table">
           <thead>
