@@ -80,7 +80,7 @@
 <nav class="tab-bar" id="tab-bar">
   <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
   <button class="tab-btn" data-tab="requirements">Requirements</button>
-  <button class="tab-btn" data-tab="io-calc">I/O Calculator</button>
+  <button class="tab-btn" data-tab="io-calc">I/O Database</button>
   <button class="tab-btn" data-tab="estimation">Cost Estimation</button>
   <button class="tab-btn" data-tab="execution">Execution Board</button>
   <button class="tab-btn" data-tab="fatsat">FAT/SAT Protocol</button>
@@ -150,17 +150,73 @@
     </div>
   </section>
 
-  <!-- I/O CALCULATOR PANEL -->
+  <!-- I/O & TAG DATABASE MODULE -->
   <section class="tab-panel" id="panel-io-calc">
     <div class="panel-header-row">
-      <h2 class="panel-title">I/O &amp; Tag Tier Calculator</h2>
+      <h2 class="panel-title">I/O &amp; Tag Database</h2>
       <div class="btn-row">
-        <button class="btn btn-primary" id="calculate-io-btn">Calculate Total Tags</button>
+        <label for="io-import-file" class="btn btn-ghost" style="cursor: pointer;">📂 Import CSV</label>
+        <input type="file" id="io-import-file" accept=".csv" style="display: none;" />
+        <button class="btn btn-ghost" id="io-export-btn">⬇ Export CSV</button>
+        <button class="btn btn-primary" id="add-io-btn">+ New Tag</button>
       </div>
     </div>
-    <p class="hint-text">Size your SCADA licensing and hardware based on plant I/O count.</p>
-    <div class="card" id="io-calc-container">
-        <!-- Rendered by app.js -->
+
+    <!-- Summary Panel -->
+    <div class="io-summary-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="count-ai">0</div>
+        <div class="stat-label">Analog Inputs (AI)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="count-ao">0</div>
+        <div class="stat-label">Analog Outputs (AO)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="count-di">0</div>
+        <div class="stat-label">Digital Inputs (DI)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="count-do">0</div>
+        <div class="stat-label">Digital Outputs (DO)</div>
+      </div>
+      <div class="stat-box tier-box">
+        <div class="stat-value" id="license-tier">150</div>
+        <div class="stat-label">Required SCADA Tier</div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="filter-row">
+      <input type="text" id="io-search" placeholder="Search tag name, PLC address, or description..." />
+      <select id="io-type-filter">
+        <option value="">All Signal Types</option>
+        <option value="AI">AI (Analog Input)</option>
+        <option value="AO">AO (Analog Output)</option>
+        <option value="DI">DI (Digital Input)</option>
+        <option value="DO">DO (Digital Output)</option>
+        <option value="Internal">Internal / Soft Tag</option>
+      </select>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-wrap">
+      <table class="data-table" id="io-table">
+        <thead>
+          <tr>
+            <th>Tag Name</th>
+            <th>Description</th>
+            <th>Type</th>
+            <th>PLC Address</th>
+            <th>HMI Screen</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="io-tbody"></tbody>
+      </table>
+      <p class="empty-state hidden" id="io-empty">No I/O tags found in database.</p>
     </div>
   </section>
 
@@ -316,6 +372,7 @@
 <script src="scripts/pdf-generator.js"></script>
 <script src="scripts/api.js"></script>
 <script src="scripts/punchlist.js"></script>
+<script src="scripts/io-tags.js"></script>
 <script src="app.js"></script>
   
 </body>
