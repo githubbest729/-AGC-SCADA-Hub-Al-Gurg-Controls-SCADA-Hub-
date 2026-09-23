@@ -355,6 +355,26 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 ::-webkit-scrollbar-thumb { background: var(--slate-700); border-radius: 4px; }
 ::-webkit-scrollbar-track { background: var(--slate-900); }
 
+/* I/O Module Specifics */
+.io-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.tier-box {
+  background: linear-gradient(135deg, rgba(56,189,248,0.1) 0%, rgba(14,165,233,0.2) 100%);
+  border: 1px solid var(--electric-blue);
+}
+.tier-box .stat-value {
+  color: var(--electric-blue);
+}
+.io-badge-ai { background: rgba(234, 179, 8, 0.15); color: #fde047; }
+.io-badge-ao { background: rgba(249, 115, 22, 0.15); color: #fdba74; }
+.io-badge-di { background: rgba(34, 197, 94, 0.15); color: #86efac; }
+.io-badge-do { background: rgba(59, 130, 246, 0.15); color: #93c5fd; }
+.io-badge-internal { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
+
 @media print {
   .app-header, .tab-bar, .app-footer, .offline-banner, .panel-header-row button, #estimates-table, .card:has(#estimates-tbody) { display: none !important; }
   body { background: white; color: black; }
