@@ -1,11 +1,15 @@
 {
+  "id": "/",
   "name": "AGC SCADA Hub",
   "short_name": "AGC Hub",
   "description": "Al Gurg Controls SCADA Hub - Requirements tracking, cost estimation, and execution management for SCADA engineers.",
+  "lang": "en-AE",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "engineering"],
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
   "icons": [
@@ -32,6 +36,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "New Costing Sheet",
+      "short_name": "Estimate",
+      "description": "Start a new commercial cost estimate",
+      "url": "./index.html?tab=estimation",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Log Site Snag",
+      "short_name": "Punchlist",
+      "description": "Log a new issue on the site punchlist",
+      "url": "./index.html?tab=punchlist",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Execution Board",
+      "short_name": "Tasks",
+      "description": "View active project tasks",
+      "url": "./index.html?tab=execution",
+      "icons": [{ "src": "icons/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }
