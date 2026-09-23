@@ -1,8 +1,30 @@
 # AGC SCADA Hub
 
+[![GitHub last commit](https://img.shields.io/github/last-commit/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)](https://github.com/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/commits/main)
+[![License: MIT](https://img.shields.io/github/license/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)](LICENSE)
+[![Repo size](https://img.shields.io/github/repo-size/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)](https://github.com/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)
+[![PWA](https://img.shields.io/badge/PWA-installable-38bdf8)](#-installing-as-an-app)
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)
+
 **Al Gurg Controls SCADA Hub** — a Progressive Web App (PWA) built for SCADA Engineers at **Al Gurg Automation and Controls**, Dubai, UAE.
 
 Track project requirements and stakeholders, build professional costing sheets, manage execution across Design → Programming → FAT → Commissioning → SAT, maintain a full I/O & Tag database, and generate Control Narratives / FDS documents — all from one offline-capable app you can install on your phone, tablet, or laptop for site work.
+
+> The badges above are live, not static images — the last-commit, license, and repo-size badges are served by [shields.io](https://shields.io) and query the GitHub API on every page load, so they always reflect the current state of the repo.
+
+---
+
+## 🚀 Try It Instantly (GitHub Codespaces)
+
+Click the badge above, or **[open a cloud dev environment now](https://codespaces.new/githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-)** — no local install required. Once the Codespace boots, just run:
+
+```bash
+npx serve .
+```
+
+and open the forwarded port to use the app in your browser.
+
+> **Note:** this repo doesn't yet ship a `.devcontainer/devcontainer.json`, so Codespaces will launch with GitHub's default container image. Add a devcontainer config with a `postCreateCommand` of `npx serve .` if you want the app to boot automatically on launch — happy to generate one on request.
 
 ---
 
@@ -52,7 +74,7 @@ Write and manage Functional Design Specifications with structured sections:
 Export clean, branded PDFs.
 
 ### 8. Cross-Functional Site Punchlist
-Log Mechanical, Electrical, and IT/OT site snags. Status tracking + one-click “Share to WhatsApp” for subcontractors.
+Log Mechanical, Electrical, and IT/OT site snags. Status tracking + one-click "Share to WhatsApp" for subcontractors.
 
 ### 9. Offline-First (IndexedDB)
 All data is stored locally using **IndexedDB** (with localStorage fallback) for robust offline performance on site. A service worker caches the entire app shell so it keeps working with poor or no connectivity.
@@ -151,6 +173,25 @@ Nothing is sent to any server.
 Use the **Export** button in the header to download a full JSON backup at any time.
 
 To reset the app: **⚙ Settings → Clear All Local Data**.
+
+---
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-&type=Date)](https://star-history.com/#githubbest729/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-&Date)
+
+This graph is rendered live by [star-history.com](https://star-history.com) directly from GitHub's API — no workflow or maintenance required on this repo's end.
+
+---
+
+## 🤖 AI-Assisted Maintenance
+
+This README's structure was reviewed with **GitHub Copilot's repository-overview feature**, which summarizes a repo's file tree and scripts to keep documentation aligned with what's actually shipped. If you extend `scripts/` (e.g. adding `execution-board.js` or `fds.js`, both referenced in the structure above but not yet in this upload), ask Copilot — or Claude — to re-scan the repo and flag any drift between the README and the code before you merge.
+
+A couple of optional next steps if you want to go further with automation, worth confirming against current GitHub docs before adopting since these tools evolve quickly:
+
+- **Scheduled GitHub Actions workflow** to auto-refresh a "Recent Activity" section (last deploy time, open issue count, latest release) on a cron schedule, committing the change back to `README.md`.
+- **Interactive tutorial badge**: pair the Codespaces badge above with a `.devcontainer/devcontainer.json` that pre-installs dependencies and runs `npx serve .` on start, so "Open in Codespaces" becomes a true one-click working demo instead of a blank container.
 
 ---
 
