@@ -69,19 +69,19 @@ self.addEventListener("fetch", (event) => {
   // 1. Only handle GET requests
   if (request.method !== "GET") return;
 
-  // 2. Fix for the Chrome Extension error: Ignore non-http/https requests
-  if (!request.url.startsWith('http')) return;
+  const url = new URL(request.url);
+
+  // 2. Skip non-HTTP requests (like chrome-extension://) to prevent caching errors
+  if (!url.protocol.startsWith('http')) return;
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Serve from cache immediately (fast + offline-safe),
-        // and refresh the cache in the background when online.
+        // Serve from cache immediately, and refresh the cache in the background.
         fetchAndUpdateCache(request);
         return cachedResponse;
       }
-      // Not cached yet — try the network, fall back to cached index.html
-      // for navigation requests so the app still loads offline.
+      
       return fetch(request)
         .then((networkResponse) => {
           fetchAndUpdateCache(request);
@@ -101,6 +101,10 @@ self.addEventListener("fetch", (event) => {
 });
 
 function fetchAndUpdateCache(request) {
+  const url = new URL(request.url);
+  // Double-check here to ensure background cache updates never touch non-http requests
+  if (!url.protocol.startsWith('http')) return;
+
   fetch(request)
     .then((response) => {
       if (response && response.status === 200 && response.type === "basic") {
