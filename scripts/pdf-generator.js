@@ -83,7 +83,7 @@ window.AGC.PDF = (() => {
       <div style="width:740px;padding:20px;font-family:Arial,Helvetica,sans-serif;color:#1e293b;background:#ffffff;font-size:10pt;line-height:1.4;">
         
         <!-- Header -->
-        <div style="display:flex;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:12px;margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px;">
           <div>
             <h2 style="margin:0;color:#0f172a;font-size:18pt;">Al Gurg Automation &amp; Controls</h2>
             <p style="margin:4px 0 0;color:#64748b;font-size:9pt;">
@@ -101,7 +101,7 @@ window.AGC.PDF = (() => {
         </div>
 
         <!-- Project Info -->
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:12px 16px;border-radius:6px;margin-bottom:18px;font-size:10pt;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 16px;border-radius:6px;margin-bottom:12px;font-size:10pt;">
           <table style="width:100%;border-collapse:collapse;">
             <tr>
               <td><strong>Project Name:</strong> ${escapeHtml(estimateData.name || "Untitled Project")}</td>
@@ -116,7 +116,7 @@ window.AGC.PDF = (() => {
 
         <!-- Scope of Work -->
         <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">Scope of Work</h3>
-        <ul style="margin:0 0 18px;padding-left:20px;color:#334155;font-size:9.5pt;line-height:1.5;">
+        <ul style="margin:0 0 12px;padding-left:20px;color:#334155;font-size:9.5pt;line-height:1.35;">
           <li>Complete hardware engineering, panel fabrication oversight, and PLC/SCADA control philosophy implementation.</li>
           <li>Development of operator HMI graphics, alarm/event logging subsystems, and historian integration.</li>
           <li>Factory Acceptance Testing (FAT) execution at our Dubai facility with client witness testing.</li>
@@ -125,10 +125,10 @@ window.AGC.PDF = (() => {
 
         <!-- BOQ -->
         <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">1. Bill of Quantities (Hardware &amp; Software Materials)</h3>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:9pt;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
           <thead>
             <tr style="background:#f1f5f9;color:#334155;">
-              <th style="padding:7px;border:1px solid #cbd5e1;width:30px;text-align:center;">#</th>
+              <th style="padding:5px 7px;border:1px solid #cbd5e1;width:30px;text-align:center;">#</th>
               <th style="padding:7px;border:1px solid #cbd5e1;width:90px;">Category</th>
               <th style="padding:7px;border:1px solid #cbd5e1;">Description / SKU</th>
               <th style="padding:7px;border:1px solid #cbd5e1;width:70px;text-align:center;">Qty</th>
@@ -141,10 +141,10 @@ window.AGC.PDF = (() => {
 
         <!-- Engineering -->
         <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">2. Engineering &amp; Site Services Breakdown</h3>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:18px;font-size:9pt;">
+        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
           <thead>
             <tr style="background:#f1f5f9;color:#334155;">
-              <th style="padding:7px;border:1px solid #cbd5e1;">Engineering Phase</th>
+              <th style="padding:5px 7px;border:1px solid #cbd5e1;">Engineering Phase</th>
               <th style="padding:7px;border:1px solid #cbd5e1;width:95px;text-align:center;">Duration</th>
               <th style="padding:7px;border:1px solid #cbd5e1;width:100px;text-align:right;">Rate (${currency}/hr)</th>
               <th style="padding:7px;border:1px solid #cbd5e1;width:105px;text-align:right;">Total (${currency})</th>
@@ -154,7 +154,7 @@ window.AGC.PDF = (() => {
         </table>
 
         <!-- Payment Terms + Totals -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;page-break-inside:avoid;break-inside:avoid;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid;">
           <div style="width:45%;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:6px;font-size:9pt;color:#334155;">
             <strong>Commercial Payment Terms:</strong><br><br>
             • 40% Advance upon order placement<br>
@@ -190,7 +190,7 @@ window.AGC.PDF = (() => {
         </div>
 
         <!-- Signatures -->
-        <div style="display:flex;justify-content:space-between;margin-top:30px;margin-bottom:20px;font-size:9.5pt;page-break-inside:avoid;break-inside:avoid;">
+        <div style="display:flex;justify-content:space-between;margin-top:16px;margin-bottom:12px;font-size:9.5pt;page-break-inside:avoid;break-inside:avoid;">
           <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;">
             <strong>Prepared By:</strong><br>
             Al Gurg Automation &amp; Controls<br>
@@ -226,7 +226,7 @@ window.AGC.PDF = (() => {
       const element = container.firstElementChild;
 
       const opt = {
-        margin:       10,
+        margin:       8,
         filename:     filename,
         image:        { type: "jpeg", quality: 0.98 },
         html2canvas:  {
@@ -236,11 +236,12 @@ window.AGC.PDF = (() => {
           backgroundColor: "#ffffff"
         },
         jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
-        // Without this, html2pdf's auto-pagination can slice straight through
-        // a row (e.g. the footer) if content is even slightly taller than one
-        // page. 'css' mode makes it honor page-break-inside:avoid on the
-        // signature/footer/summary blocks above instead of cutting mid-row.
-        pagebreak:    { mode: ["css", "legacy"] }
+        // 'avoid-all' disables html2pdf's risky pixel-row canvas slicing
+        // entirely (that's what was cutting the footer text mid-character).
+        // 'css' still lets page-break-inside:avoid on the summary/signature/
+        // footer blocks above force a clean break to page 2 in the rare case
+        // content genuinely doesn't fit — but it will never slice mid-row again.
+        pagebreak:    { mode: ["avoid-all", "css"] }
       };
 
       html2pdf()
