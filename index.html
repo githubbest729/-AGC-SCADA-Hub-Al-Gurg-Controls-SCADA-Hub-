@@ -1,424 +1,415 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>AGC SCADA Hub | Requirements, Estimation & Execution</title>
+  <meta name="description" content="Al Gurg Controls SCADA Hub - Requirements tracking, cost estimation, and cross-functional execution management for SCADA engineers." />
+  <meta name="theme-color" content="#0f172a" />
 
-<title>AGC SCADA Hub | Requirements, Estimation & Execution</title>
-<meta name="description" content="Al Gurg Controls SCADA Hub - Requirements tracking, cost estimation, and cross-functional execution management for SCADA engineers." />
-<meta name="theme-color" content="#0f172a" />
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="AGC SCADA Hub | Requirements, Estimation & Execution" />
+  <meta property="og:description" content="Project estimation, requirement tracking, and cross-functional site execution for Al Gurg Automation." />
+  <meta property="og:image" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png" />
+  <meta property="og:url" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/" />
+  <meta property="og:type" content="website" />
 
-<!-- Open Graph Meta Tags for WhatsApp/Slack Link Previews -->
-<meta property="og:title" content="AGC SCADA Hub | Requirements, Estimation & Execution" />
-<meta property="og:description" content="Project estimation, requirement tracking, and cross-functional site execution for Al Gurg Automation." />
-<meta property="og:image" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png" />
-<meta property="og:url" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/" />
-<meta property="og:type" content="website" />
+  <!-- Twitter Card Meta Tags -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="AGC SCADA Hub | Engineering Workspace" />
+  <meta name="twitter:description" content="Project estimation, requirement tracking, and FAT/SAT protocol management." />
+  <meta name="twitter:image" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png" />
 
-<!-- Twitter Card Meta Tags -->
-<meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:title" content="AGC SCADA Hub | Engineering Workspace" />
-<meta name="twitter:description" content="Project estimation, requirement tracking, and FAT/SAT protocol management." />
-<meta name="twitter:image" content="https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+  <link rel="stylesheet" href="style.css" />
 
-<link rel="manifest" href="manifest.json" />
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
-<link rel="apple-touch-icon" href="icons/icon-192x192.png" />
-<link rel="stylesheet" href="style.css" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js" defer></script>
-<!-- Geo Positioning Meta Tags -->
-<meta name="geo.region" content="AE-DU" />
-<meta name="geo.placename" content="Dubai" />
-<meta name="geo.position" content="25.2680;55.3350" />
-<meta name="ICBM" content="25.2680, 55.3350" />
+  <!-- Geo Positioning Meta Tags -->
+  <meta name="geo.region" content="AE-DU" />
+  <meta name="geo.placename" content="Dubai" />
+  <meta name="geo.position" content="25.2680;55.3350" />
+  <meta name="ICBM" content="25.2680, 55.3350" />
 
-<!-- Google Local Business Schema (JSON-LD) -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "name": "Al Gurg Automation and Controls",
-  "image": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png",
-  "@id": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/",
-  "url": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/",
-  "telephone": "",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira",
-    "addressLocality": "Dubai",
-    "postalCode": "25490",
-    "addressCountry": "AE"
-  },
-  "geo": {
-    "@type": "GeoCoordinates",
-    "latitude": 25.2680,
-    "longitude": 55.3350
+  <!-- Google Local Business Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Al Gurg Automation and Controls",
+    "image": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/icons/og-image.png",
+    "@id": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/",
+    "url": "https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/",
+    "telephone": "",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira",
+      "addressLocality": "Dubai",
+      "postalCode": "25490",
+      "addressCountry": "AE"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 25.2680,
+      "longitude": 55.3350
+    }
   }
-}
-</script>
-  
+  </script>
 </head>
+
 <body>
-
-<div id="offline-banner" class="offline-banner hidden">⚡ Offline mode — changes are saved locally and will sync when the app is reopened online.</div>
-
-<header class="app-header">
-  <div class="brand">
-    <span class="brand-mark">AGC</span>
-    <div class="brand-text">
-      <h1>SCADA Hub</h1>
-      <p>Al Gurg Automation &amp; Controls</p>
-    </div>
+  <div id="offline-banner" class="offline-banner hidden">
+    ⚡ Offline mode — changes are saved locally and will sync when the app is reopened online.
   </div>
-  <div class="header-actions">
-    <span id="sync-status" class="sync-status">● Saved locally</span>
-    <button id="export-btn" class="btn btn-ghost" title="Export all data as JSON">Export</button>
-    <button id="settings-btn" class="btn btn-ghost" title="Settings">⚙</button>
-  </div>
-</header>
 
-<nav class="tab-bar" id="tab-bar">
-  <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-  <button class="tab-btn" data-tab="requirements">Requirements</button>
-  <button class="tab-btn" data-tab="io-calc">I/O Database</button>
-  <button class="tab-btn" data-tab="estimation">Cost Estimation</button>
-  <button class="tab-btn" data-tab="execution">Execution Board</button>
-  <button class="tab-btn" data-tab="fatsat">FAT/SAT Protocol</button>
-  <button class="tab-btn" data-tab="punchlist">Site Punchlist</button>
-</nav>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark">AGC</span>
+      <div class="brand-text">
+        <h1>SCADA Hub</h1>
+        <p>Al Gurg Automation &amp; Controls</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="sync-status" class="sync-status">● Saved locally</span>
+      <button id="export-btn" class="btn btn-ghost" title="Export all data as JSON">Export</button>
+      <button id="settings-btn" class="btn btn-ghost" title="Settings">⚙</button>
+    </div>
+  </header>
 
-<main id="app-main">
+  <nav class="tab-bar" id="tab-bar">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="requirements">Requirements</button>
+    <button class="tab-btn" data-tab="io-calc">I/O Database</button>
+    <button class="tab-btn" data-tab="estimation">Cost Estimation</button>
+    <button class="tab-btn" data-tab="execution">Execution Board</button>
+    <button class="tab-btn" data-tab="fatsat">FAT/SAT Protocol</button>
+    <button class="tab-btn" data-tab="punchlist">Site Punchlist</button>
+  </nav>
 
-  <!-- DASHBOARD -->
-  <section class="tab-panel active" id="panel-dashboard">
-    <h2 class="panel-title">Project Overview</h2>
-    <div class="stat-grid" id="dashboard-stats"></div>
-    <div class="dash-grid">
+  <main id="app-main">
+
+    <!-- DASHBOARD -->
+    <section class="tab-panel active" id="panel-dashboard">
+      <h2 class="panel-title">Project Overview</h2>
+      <div class="stat-grid" id="dashboard-stats"></div>
+      <div class="dash-grid">
+        <div class="card">
+          <h3>Open Requirements</h3>
+          <div id="dash-requirements-list" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>Execution Snapshot</h3>
+          <div id="dash-execution-snapshot" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>Recent Estimates</h3>
+          <div id="dash-estimates-list" class="mini-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REQUIREMENTS -->
+    <section class="tab-panel" id="panel-requirements">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Requirements &amp; Stakeholder Matrix</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="generate-req-pdf-btn">📄 Generate PDF</button>
+          <button class="btn btn-primary" id="add-requirement-btn">+ New Requirement</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <input type="text" id="req-search" placeholder="Search requirements, projects, or stakeholders..." />
+        <select id="req-status-filter">
+          <option value="">All statuses</option>
+          <option value="Open">Open</option>
+          <option value="In Progress">In Progress</option>
+          <option value="Blocked">Blocked</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table class="data-table" id="requirements-table">
+          <thead>
+            <tr>
+              <th>Project</th>
+              <th>Requirement</th>
+              <th>Stakeholder</th>
+              <th>Role</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th>Due</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="requirements-tbody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="requirements-empty">No requirements logged yet. Click "New Requirement" to add one.</p>
+      </div>
+    </section>
+
+    <!-- I/O & TAG DATABASE -->
+    <section class="tab-panel" id="panel-io-calc">
+      <div class="panel-header-row">
+        <h2 class="panel-title">I/O &amp; Tag Database</h2>
+        <div class="btn-row">
+          <label for="io-import-file" class="btn btn-ghost" style="cursor: pointer;">📂 Import CSV</label>
+          <input type="file" id="io-import-file" accept=".csv" style="display: none;" />
+          <button class="btn btn-ghost" id="io-export-btn">⬇ Export CSV</button>
+          <button class="btn btn-primary" id="add-io-btn">+ New Tag</button>
+        </div>
+      </div>
+
+      <div class="io-summary-grid">
+        <div class="stat-box">
+          <div class="stat-value" id="count-ai">0</div>
+          <div class="stat-label">Analog Inputs (AI)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="count-ao">0</div>
+          <div class="stat-label">Analog Outputs (AO)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="count-di">0</div>
+          <div class="stat-label">Digital Inputs (DI)</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value" id="count-do">0</div>
+          <div class="stat-label">Digital Outputs (DO)</div>
+        </div>
+        <div class="stat-box tier-box">
+          <div class="stat-value" id="license-tier">150</div>
+          <div class="stat-label">Required SCADA Tier</div>
+        </div>
+      </div>
+
+      <div class="filter-row">
+        <input type="text" id="io-search" placeholder="Search tag name, PLC address, or description..." />
+        <select id="io-type-filter">
+          <option value="">All Signal Types</option>
+          <option value="AI">AI (Analog Input)</option>
+          <option value="AO">AO (Analog Output)</option>
+          <option value="DI">DI (Digital Input)</option>
+          <option value="DO">DO (Digital Output)</option>
+          <option value="Internal">Internal / Soft Tag</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table" id="io-table">
+          <thead>
+            <tr>
+              <th>Tag Name</th>
+              <th>Description</th>
+              <th>Type</th>
+              <th>PLC Address</th>
+              <th>HMI Screen</th>
+              <th>Priority</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="io-tbody"></tbody>
+        </table>
+        <p class="empty-state hidden" id="io-empty">No I/O tags found in database.</p>
+      </div>
+    </section>
+
+    <!-- COST ESTIMATION ENGINE -->
+    <section class="tab-panel" id="panel-estimation">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Enterprise Cost Estimation Engine</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
+          <button class="btn btn-ghost" id="export-csv-btn">⬇ Download CSV</button>
+          <button class="btn btn-primary" id="print-estimate-btn">Print / PDF Summary</button>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <span style="font-size: 0.85rem; font-weight: 600; color: var(--electric-blue);">Load Project Template:</span>
+        <div class="btn-row">
+          <button class="btn btn-ghost btn-sm" data-template="small">Small Project (50-100 I/O)</button>
+          <button class="btn btn-ghost btn-sm" data-template="medium">Medium Project (150-300 I/O)</button>
+          <button class="btn btn-ghost btn-sm" data-template="large">Large Project (400+ I/O)</button>
+        </div>
+      </div>
+
+      <div class="est-layout">
+        <div class="card est-meta-card">
+          <label>Costing Sheet Name
+            <input type="text" id="est-name" placeholder="e.g. Al Ain WTP - SCADA Upgrade" />
+          </label>
+          <label>Client / End User
+            <input type="text" id="est-client" placeholder="e.g. AADC" />
+          </label>
+          <label>Currency
+            <select id="est-currency">
+              <option value="AED">AED</option>
+              <option value="USD">USD</option>
+            </select>
+          </label>
+          <label>Contingency % (Applied to Subtotal)
+            <input type="number" id="est-contingency" value="10" min="0" step="1" />
+          </label>
+          <label>Net Profit Margin % (Applied after Contingency)
+            <input type="number" id="est-margin" value="15" min="0" step="1" />
+          </label>
+
+          <h3 style="margin-top: 15px; margin-bottom: 12px; font-size: 0.85rem; color: var(--electric-blue);">Phase Hours &amp; Rates (AED/hr)</h3>
+
+          <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Design &amp; Architecture</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-design" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+              <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-design" value="320" min="0" step="1" style="margin-top:2px;"/></label>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">PLC / SCADA Programming</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-prog" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+              <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-prog" value="280" min="0" step="1" style="margin-top:2px;"/></label>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">FAT Execution</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-fat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+              <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-fat" value="260" min="0" step="1" style="margin-top:2px;"/></label>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">SAT &amp; Commissioning</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-sat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+              <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-sat" value="300" min="0" step="1" style="margin-top:2px;"/></label>
+            </div>
+          </div>
+
+          <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
+            <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Site Supervision</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+              <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-supervision" value="0" min="0" step="1" style="margin-top:2px;"/></label>
+              <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-supervision" value="350" min="0" step="1" style="margin-top:2px;"/></label>
+            </div>
+          </div>
+        </div>
+
+        <div class="card est-boq-card">
+          <div class="panel-header-row">
+            <h3>Bill of Quantities (BOQ) &amp; Hardware Catalog</h3>
+            <button class="btn btn-ghost btn-sm" id="add-boq-row">+ Add Line Item</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table" id="boq-table">
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Catalog Item</th>
+                  <th>Description</th>
+                  <th>Qty</th>
+                  <th>Unit</th>
+                  <th>Unit Cost</th>
+                  <th>Line Total</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="boq-tbody"></tbody>
+            </table>
+          </div>
+          <div class="cost-summary" id="cost-summary"></div>
+        </div>
+      </div>
+
       <div class="card">
-        <h3>Open Requirements</h3>
-        <div id="dash-requirements-list" class="mini-list"></div>
-      </div>
-      <div class="card">
-        <h3>Execution Snapshot</h3>
-        <div id="dash-execution-snapshot" class="mini-list"></div>
-      </div>
-      <div class="card">
-        <h3>Recent Estimates</h3>
-        <div id="dash-estimates-list" class="mini-list"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- REQUIREMENTS & STAKEHOLDER MATRIX -->
-  <section class="tab-panel" id="panel-requirements">
-    <div class="panel-header-row">
-      <h2 class="panel-title">Requirements &amp; Stakeholder Matrix</h2>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="generate-req-pdf-btn">📄 Generate PDF</button>
-        <button class="btn btn-primary" id="add-requirement-btn">+ New Requirement</button>
-      </div>
-    </div>
-
-    <div class="filter-row">
-      <input type="text" id="req-search" placeholder="Search requirements, projects, or stakeholders..." />
-      <select id="req-status-filter">
-        <option value="">All statuses</option>
-        <option value="Open">Open</option>
-        <option value="In Progress">In Progress</option>
-        <option value="Blocked">Blocked</option>
-        <option value="Delivered">Delivered</option>
-      </select>
-    </div>
-
-    <div class="table-wrap">
-      <table class="data-table" id="requirements-table">
-        <thead>
-          <tr>
-            <th>Project</th>
-            <th>Requirement</th>
-            <th>Stakeholder</th>
-            <th>Role</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th>Due</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="requirements-tbody"></tbody>
-      </table>
-      <p class="empty-state hidden" id="requirements-empty">No requirements logged yet. Click "New Requirement" to add one.</p>
-    </div>
-  </section>
-
-  <!-- I/O & TAG DATABASE MODULE -->
-  <section class="tab-panel" id="panel-io-calc">
-    <div class="panel-header-row">
-      <h2 class="panel-title">I/O &amp; Tag Database</h2>
-      <div class="btn-row">
-        <label for="io-import-file" class="btn btn-ghost" style="cursor: pointer;">📂 Import CSV</label>
-        <input type="file" id="io-import-file" accept=".csv" style="display: none;" />
-        <button class="btn btn-ghost" id="io-export-btn">⬇ Export CSV</button>
-        <button class="btn btn-primary" id="add-io-btn">+ New Tag</button>
-      </div>
-    </div>
-
-    <!-- Summary Panel -->
-    <div class="io-summary-grid">
-      <div class="stat-box">
-        <div class="stat-value" id="count-ai">0</div>
-        <div class="stat-label">Analog Inputs (AI)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="count-ao">0</div>
-        <div class="stat-label">Analog Outputs (AO)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="count-di">0</div>
-        <div class="stat-label">Digital Inputs (DI)</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value" id="count-do">0</div>
-        <div class="stat-label">Digital Outputs (DO)</div>
-      </div>
-      <div class="stat-box tier-box">
-        <div class="stat-value" id="license-tier">150</div>
-        <div class="stat-label">Required SCADA Tier</div>
-      </div>
-    </div>
-
-    <!-- Controls -->
-    <div class="filter-row">
-      <input type="text" id="io-search" placeholder="Search tag name, PLC address, or description..." />
-      <select id="io-type-filter">
-        <option value="">All Signal Types</option>
-        <option value="AI">AI (Analog Input)</option>
-        <option value="AO">AO (Analog Output)</option>
-        <option value="DI">DI (Digital Input)</option>
-        <option value="DO">DO (Digital Output)</option>
-        <option value="Internal">Internal / Soft Tag</option>
-      </select>
-    </div>
-
-    <!-- Data Table -->
-    <div class="table-wrap">
-      <table class="data-table" id="io-table">
-        <thead>
-          <tr>
-            <th>Tag Name</th>
-            <th>Description</th>
-            <th>Type</th>
-            <th>PLC Address</th>
-            <th>HMI Screen</th>
-            <th>Priority</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="io-tbody"></tbody>
-      </table>
-      <p class="empty-state hidden" id="io-empty">No I/O tags found in database.</p>
-    </div>
-  </section>
-
-  <!-- COST ESTIMATION ENGINE -->
-  <section class="tab-panel" id="panel-estimation">
-    <div class="panel-header-row">
-      <h2 class="panel-title">Enterprise Cost Estimation Engine</h2>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
-        <button class="btn btn-ghost" id="export-csv-btn">⬇ Download CSV</button>
-        <button class="btn btn-primary" id="print-estimate-btn">Print / PDF Summary</button>
-      </div>
-    </div>
-
-    <!-- Template Loader Row -->
-    <div class="card" style="padding: 12px 16px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-      <span style="font-size: 0.85rem; font-weight: 600; color: var(--electric-blue);">Load Project Template:</span>
-      <div class="btn-row">
-        <button class="btn btn-ghost btn-sm" data-template="small">Small Project (50-100 I/O)</button>
-        <button class="btn btn-ghost btn-sm" data-template="medium">Medium Project (150-300 I/O)</button>
-        <button class="btn btn-ghost btn-sm" data-template="large">Large Project (400+ I/O)</button>
-      </div>
-    </div>
-
-    <div class="est-layout">
-      <div class="card est-meta-card">
-        <label>Costing Sheet Name
-          <input type="text" id="est-name" placeholder="e.g. Al Ain WTP - SCADA Upgrade" />
-        </label>
-        <label>Client / End User
-          <input type="text" id="est-client" placeholder="e.g. AADC" />
-        </label>
-        <label>Currency
-          <select id="est-currency">
-            <option value="AED">AED</option>
-            <option value="USD">USD</option>
-          </select>
-        </label>
-        <label>Contingency % (Applied to Subtotal)
-          <input type="number" id="est-contingency" value="10" min="0" step="1" />
-        </label>
-        <label>Net Profit Margin % (Applied after Contingency)
-          <input type="number" id="est-margin" value="15" min="0" step="1" />
-        </label>
-
-        <h3 style="margin-top: 15px; margin-bottom: 12px; font-size: 0.85rem; color: var(--electric-blue);">Phase Hours &amp; Rates (AED/hr)</h3>
-        
-        <!-- Design Phase -->
-        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
-          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Design &amp; Architecture</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-design" value="0" min="0" step="1" style="margin-top:2px;"/></label>
-            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-design" value="320" min="0" step="1" style="margin-top:2px;"/></label>
-          </div>
-        </div>
-
-        <!-- Programming Phase -->
-        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
-          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">PLC / SCADA Programming</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-prog" value="0" min="0" step="1" style="margin-top:2px;"/></label>
-            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-prog" value="280" min="0" step="1" style="margin-top:2px;"/></label>
-          </div>
-        </div>
-
-        <!-- FAT Execution Phase -->
-        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
-          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">FAT Execution</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-fat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
-            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-fat" value="260" min="0" step="1" style="margin-top:2px;"/></label>
-          </div>
-        </div>
-
-        <!-- SAT & Commissioning Phase -->
-        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
-          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">SAT &amp; Commissioning</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-sat" value="0" min="0" step="1" style="margin-top:2px;"/></label>
-            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-sat" value="300" min="0" step="1" style="margin-top:2px;"/></label>
-          </div>
-        </div>
-
-        <!-- Site Supervision Phase -->
-        <div style="background: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; margin-bottom: 8px; border: 1px solid var(--slate-800);">
-          <div style="font-size: 0.78rem; font-weight: 600; color: var(--slate-300); margin-bottom: 4px;">Site Supervision</div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-            <label style="margin:0; font-size:0.75rem;">Hours <input type="number" id="hrs-supervision" value="0" min="0" step="1" style="margin-top:2px;"/></label>
-            <label style="margin:0; font-size:0.75rem;">Rate (AED) <input type="number" id="rate-supervision" value="350" min="0" step="1" style="margin-top:2px;"/></label>
-          </div>
-        </div>
-      </div>
-
-      <div class="card est-boq-card">
-        <div class="panel-header-row">
-          <h3>Bill of Quantities (BOQ) &amp; Hardware Catalog</h3>
-          <button class="btn btn-ghost btn-sm" id="add-boq-row">+ Add Line Item</button>
-        </div>
+        <h3>Saved Costing Sheets (IndexedDB)</h3>
         <div class="table-wrap">
-          <table class="data-table" id="boq-table">
+          <table class="data-table" id="estimates-table">
             <thead>
-              <tr>
-                <th>Category</th>
-                <th>Catalog Item</th>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Unit</th>
-                <th>Unit Cost</th>
-                <th>Line Total</th>
-                <th></th>
-              </tr>
+              <tr><th>Name</th><th>Client</th><th>Grand Total</th><th>Date</th><th></th></tr>
             </thead>
-            <tbody id="boq-tbody"></tbody>
+            <tbody id="estimates-tbody"></tbody>
           </table>
         </div>
-
-        <div class="cost-summary" id="cost-summary"></div>
       </div>
-    </div>
+    </section>
 
-    <div class="card">
-      <h3>Saved Costing Sheets (IndexedDB)</h3>
-      <div class="table-wrap">
-        <table class="data-table" id="estimates-table">
-          <thead>
-            <tr><th>Name</th><th>Client</th><th>Grand Total</th><th>Date</th><th></th></tr>
-          </thead>
-          <tbody id="estimates-tbody"></tbody>
-        </table>
+    <!-- EXECUTION BOARD -->
+    <section class="tab-panel" id="panel-execution">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Execution Board</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="webhook-settings-btn">🔗 Webhook Settings</button>
+          <button class="btn btn-ghost" id="sync-clickup-btn">☁ Sync to ClickUp</button>
+          <button class="btn btn-ghost" id="sync-n8n-btn">⚡ Sync to n8n</button>
+          <button class="btn btn-primary" id="add-task-btn">+ New Task</button>
+        </div>
       </div>
-    </div>
-  </section>
+      <p class="hint-text">Drag cards between phases, or use the arrows on mobile. Assign owners across Design, Programming, FAT, Commissioning &amp; SAT teams.</p>
+      <div class="kanban-board" id="kanban-board"></div>
+    </section>
 
-  <!-- EXECUTION BOARD -->
-  <section class="tab-panel" id="panel-execution">
-    <div class="panel-header-row">
-      <h2 class="panel-title">Execution Board</h2>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="webhook-settings-btn">🔗 Webhook Settings</button>
-        <button class="btn btn-ghost" id="sync-clickup-btn">☁ Sync to ClickUp</button>
-        <button class="btn btn-ghost" id="sync-n8n-btn">⚡ Sync to n8n</button>
-        <button class="btn btn-primary" id="add-task-btn">+ New Task</button>
+    <!-- FAT/SAT PROTOCOL -->
+    <section class="tab-panel" id="panel-fatsat">
+      <div class="panel-header-row">
+        <h2 class="panel-title">FAT / SAT Delivery Protocol</h2>
+        <div class="btn-row">
+          <button class="btn btn-ghost" id="generate-fatsat-pdf-btn">📄 Export Sign-off PDF</button>
+        </div>
       </div>
-    </div>
-    <p class="hint-text">Drag cards between phases, or use the arrows on mobile. Assign owners across Design, Programming, FAT, Commissioning &amp; SAT teams. Use Sync to push board updates to ClickUp or trigger an n8n automation.</p>
-    <div class="kanban-board" id="kanban-board"></div>
-  </section>
+      <p class="hint-text">Track Factory and Site Acceptance Testing sign-offs for stakeholders.</p>
+      <div class="card" id="fatsat-container"></div>
+    </section>
 
-  <!-- FAT/SAT PROTOCOL PANEL -->
-  <section class="tab-panel" id="panel-fatsat">
-    <div class="panel-header-row">
-      <h2 class="panel-title">FAT / SAT Delivery Protocol</h2>
-      <div class="btn-row">
-        <button class="btn btn-ghost" id="generate-fatsat-pdf-btn">📄 Export Sign-off PDF</button>
+    <!-- SITE PUNCHLIST -->
+    <section class="tab-panel" id="panel-punchlist">
+      <div class="panel-header-row">
+        <h2 class="panel-title">Cross-Functional Site Punchlist</h2>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="add-punchlist-btn">+ Log Site Snag</button>
+        </div>
       </div>
-    </div>
-    <p class="hint-text">Track Factory and Site Acceptance Testing sign-offs for stakeholders.</p>
-    <div class="card" id="fatsat-container">
-        <!-- Rendered by app.js -->
-    </div>
-  </section>
+      <p class="hint-text">Track cross-functional site issues (Mechanical, Electrical, IT). Use the WhatsApp button to alert subcontractors instantly.</p>
+      <div id="punchlist-container" class="pl-form-grid"></div>
+    </section>
 
-  <!-- SITE PUNCHLIST PANEL -->
-  <section class="tab-panel" id="panel-punchlist">
-    <div class="panel-header-row">
-      <h2 class="panel-title">Cross-Functional Site Punchlist</h2>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="add-punchlist-btn">+ Log Site Snag</button>
+  </main>
+
+  <footer class="app-footer">
+    <p><strong>Al Gurg Automation and Controls</strong> — Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE</p>
+    <p class="footer-sub">AGC SCADA Hub v1.0 · Works offline · Data stored locally on this device</p>
+  </footer>
+
+  <!-- Modal -->
+  <div class="modal-overlay hidden" id="modal-overlay">
+    <div class="modal" id="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-title">Title</h3>
+        <button class="modal-close" id="modal-close">✕</button>
       </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-footer" id="modal-footer"></div>
     </div>
-    <p class="hint-text">Track cross-functional site issues (Mechanical, Electrical, IT). Use the WhatsApp button to alert subcontractors instantly.</p>
-    <div id="punchlist-container" class="pl-form-grid">
-        <!-- Rendered by punchlist.js -->
-    </div>
-  </section>
-
-</main>
-
-<footer class="app-footer">
-  <p><strong>Al Gurg Automation and Controls</strong> — Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE</p>
-  <p class="footer-sub">AGC SCADA Hub v1.0 · Works offline · Data stored locally on this device</p>
-</footer>
-
-<!-- Generic Modal -->
-<div class="modal-overlay hidden" id="modal-overlay">
-  <div class="modal" id="modal-box">
-    <div class="modal-header">
-      <h3 id="modal-title">Title</h3>
-      <button class="modal-close" id="modal-close">✕</button>
-    </div>
-    <div class="modal-body" id="modal-body"></div>
-    <div class="modal-footer" id="modal-footer"></div>
   </div>
-</div>
 
-<script src="scripts/db.js"></script>
-<script src="scripts/export.js"></script>
-<script src="scripts/pdf-generator.js"></script>
-<script src="scripts/api.js"></script>
-<script src="scripts/punchlist.js"></script>
-<script src="scripts/io-tags.js"></script>
-<script src="app.js"></script>
-  
+  <!-- ===================== SCRIPTS (ORDER IS IMPORTANT) ===================== -->
+  <!-- 1. html2pdf library first -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- 2. Your modules -->
+  <script src="scripts/db.js"></script>
+  <script src="scripts/export.js"></script>
+  <script src="scripts/pdf-generator.js"></script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/punchlist.js"></script>
+  <script src="scripts/io-tags.js"></script>
+
+  <!-- 3. Main application last -->
+  <script src="app.js"></script>
+
 </body>
 </html>
