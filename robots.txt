@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /data/
+Disallow: /scripts/
+Allow: /
+Sitemap: https://githubbest729.github.io/-AGC-SCADA-Hub-Al-Gurg-Controls-SCADA-Hub-/sitemap.xml
