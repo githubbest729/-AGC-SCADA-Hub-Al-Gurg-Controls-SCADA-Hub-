@@ -1,10 +1,65 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://www.opengis.net/kml/2.2">
-  <Placemark>
-    <name>Al Gurg Automation and Controls</name>
-    <description>SCADA Hub - Engineering Workspace</description>
-    <Point>
-      <coordinates>55.3350,25.2680,0</coordinates>
-    </Point>
-  </Placemark>
+  <Document>
+    <name>AGC SCADA Hub Locations</name>
+    <description>Enterprise Facilities and Project Sites for Al Gurg Automation &amp; Controls</description>
+
+    <!-- Enterprise Style Definition: Professional Icon and Label -->
+    <Style id="agcCorporatePin">
+      <IconStyle>
+        <scale>1.1</scale>
+        <Icon>
+          <href>https://maps.google.com/mapfiles/kml/shapes/business.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <color>ffdfa22b</color> <!-- Hex AABBGGRR format -->
+        <scale>1.1</scale>
+      </LabelStyle>
+    </Style>
+
+    <Placemark>
+      <name>Al Gurg Automation &amp; Controls (HQ)</name>
+      
+      <!-- CDATA allows us to use HTML styling inside the map popup window -->
+      <description><![CDATA[
+        <div style="font-family: Arial, sans-serif; font-size: 14px; color: #1e293b;">
+          <b>AGC SCADA Hub - Engineering Workspace</b><br><br>
+          Jebel Ali Industrial Area, PO Box 325<br>
+          Dubai, United Arab Emirates
+        </div>
+      ]]></description>
+      
+      <styleUrl>#agcCorporatePin</styleUrl>
+      
+      <!-- Default View Angle: Zooms in to 1000 meters with a 45-degree 3D tilt -->
+      <LookAt>
+        <longitude>55.1206</longitude>
+        <latitude>24.9857</latitude>
+        <altitude>0</altitude>
+        <heading>0</heading>
+        <tilt>45</tilt>
+        <range>1000</range>
+      </LookAt>
+
+      <!-- Enterprise Metadata (Invisible to user, readable by software/ERPs) -->
+      <ExtendedData>
+        <Data name="Department">
+          <value>Estimation &amp; Proposal Engineering</value>
+        </Data>
+        <Data name="TRN">
+          <value>100345678900003</value>
+        </Data>
+        <Data name="SystemVersion">
+          <value>AGC SCADA Hub v1.0</value>
+        </Data>
+      </ExtendedData>
+
+      <!-- Updated Jebel Ali Coordinates -->
+      <Point>
+        <coordinates>55.1206,24.9857,0</coordinates>
+      </Point>
+    </Placemark>
+    
+  </Document>
 </kml>
