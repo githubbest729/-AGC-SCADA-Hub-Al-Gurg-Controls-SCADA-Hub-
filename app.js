@@ -441,7 +441,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
-    window.print();
+    const e = DATA.currentEstimate;
+    if (!e.boq.length && e.phases.design.hours === 0) {
+      alert("Please add BOQ line items or engineering hours before generating the quotation PDF.");
+      return;
+    }
+    window.AGC.PDF.generateCostEstimationPdf(e, calcTotals(e));
   });
 
   function syncEstimateFromForm() {
