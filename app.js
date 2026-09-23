@@ -30,7 +30,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentEstimate: newEstimate()
   };
 
-  // Load draft estimate from local storage
   const draft = localStorage.getItem("agc_draft_estimate");
   if (draft) {
     try {
@@ -158,7 +157,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const online = navigator.onLine;
     offlineBanner.classList.toggle("hidden", online);
     
-    // Flush background sync queue the moment connectivity returns
     if (online && window.AGC && window.AGC.Api && typeof window.AGC.Api.processSyncQueue === "function") {
       window.AGC.Api.processSyncQueue();
     }
@@ -408,7 +406,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   /* =========================================================
-     ENTERPRISE COST ESTIMATION ENGINE (Updated Commercial Math)
+     ENTERPRISE COST ESTIMATION ENGINE 
      ========================================================= */
   const estNameEl = document.getElementById("est-name");
   const estClientEl = document.getElementById("est-client");
@@ -482,23 +480,74 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderEstimation();
   });
 
-  // Generate Quotation PDF
+  // =======================================================
+  // NEW WYSIWYG PRINT PREVIEW MODAL
+  // =======================================================
   document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
     const t = calcTotals(e); 
 
     if (!e.boq.length && t.totalHours === 0) {
-      alert("Please add BOQ line items or engineering hours before generating the quotation PDF.");
+      alert("Please add BOQ line items or engineering hours before previewing the quotation.");
       return;
     }
 
-    if (!window.AGC || !window.AGC.PDF || typeof window.AGC.PDF.generateCostEstimationPdf !== "function") {
+    if (!window.AGC || !window.AGC.PDF || typeof window.AGC.PDF.getQuotationHtml !== "function") {
       alert("PDF module is not loaded yet. Please refresh the page and try again.");
       return;
     }
+    
+    // Ensure draft estimates have an ID so the preview Quotation Number matches the downloaded PDF
+    if (!e.id) e.id = crypto.randomUUID();
 
-    window.AGC.PDF.generateCostEstimationPdf(e, t);
+    // 1. Fetch the raw document HTML
+    const previewHtml = window.AGC.PDF.getQuotationHtml(e, t);
+
+    // 2. Widen the modal dynamically to fit the A4 page layout
+    const modalBox = document.getElementById("modal-box");
+    const originalMaxWidth = modalBox.style.maxWidth;
+    modalBox.style.maxWidth = "820px"; 
+
+    // 3. Inject the preview into the Modal
+    openModal({
+      title: "Print Preview — Review Quotation",
+      bodyHtml: `
+        <div style="background: var(--slate-800); padding: 20px; border-radius: 6px; max-height: 65vh; overflow-y: auto; display: flex; justify-content: center;">
+          <div style="box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: none; transform-origin: top center;">
+            ${previewHtml}
+          </div>
+        </div>
+        <p style="text-align: center; color: var(--slate-400); font-size: 0.82rem; margin-top: 14px;">
+          Please review the commercial totals, exclusions, and phase breakdowns before generating the final PDF.
+        </p>
+      `,
+      footerButtons: [
+        { 
+          label: "Edit Estimate", 
+          className: "btn btn-ghost", 
+          onClick: () => {
+            modalBox.style.maxWidth = originalMaxWidth;
+            closeModal();
+          } 
+        },
+        { 
+          label: "⬇ Download Official PDF", 
+          className: "btn btn-primary", 
+          onClick: () => {
+            window.AGC.PDF.generateCostEstimationPdf(e, t);
+            modalBox.style.maxWidth = originalMaxWidth;
+            closeModal();
+          } 
+        }
+      ]
+    });
+
+    // 4. Ensure clicking the generic "X" close button also restores the modal width
+    document.getElementById("modal-close").onclick = () => {
+      modalBox.style.maxWidth = originalMaxWidth;
+      closeModal();
+    };
   });
 
   function syncEstimateFromForm() {
@@ -518,7 +567,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // --- ENTERPRISE PRICING MATH ---
   function calcTotals(estimate) {
     const rawBoqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
     const p = estimate.phases || {};
@@ -548,7 +596,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const sellingBoqTotal = rawBoqTotal * markupFactor;
     const sellingEngCost = rawEngCost * markupFactor;
 
-    const vatAmount = sellingSubtotal * 0.05; // 5% UAE VAT
+    const vatAmount = sellingSubtotal * 0.05; 
     const grandTotal = sellingSubtotal + vatAmount;
 
     return { 
@@ -636,7 +684,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCostSummary();
   }
 
-  // --- UPDATED FOR CUSTOM COMPONENT ENGINE ---
   function handleBoqFieldChange(e) {
     const id = e.target.dataset.id;
     const field = e.target.dataset.field;
