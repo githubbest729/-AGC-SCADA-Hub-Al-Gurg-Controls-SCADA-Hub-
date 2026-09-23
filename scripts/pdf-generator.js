@@ -51,18 +51,18 @@ window.AGC.PDF = (() => {
       
       return `
         <tr style="background:${rowBg}; page-break-inside: avoid; break-inside: avoid;">
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">${index + 1}</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;">
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">${index + 1}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;">
             <strong>${escapeHtml(item.category || "—")}</strong><br>
-            <span style="color:#475569; font-size:8pt;">${escapeHtml(item.description || "—")}</span>
+            <span style="color:#475569; font-size:7.5pt;">${escapeHtml(item.description || "—")}</span>
           </td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;">${item.qty || 0} ${escapeHtml(item.unit || "pcs")}</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(sellingUnitCost)}</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(sellingTotal)}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;">${item.qty || 0} ${escapeHtml(item.unit || "pcs")}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(sellingUnitCost)}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(sellingTotal)}</td>
         </tr>`;
     }).join("") || `
       <tr>
-        <td colspan="5" style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">
+        <td colspan="5" style="padding:10px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">
           No Bill of Quantities (BOQ) line items added.
         </td>
       </tr>`;
@@ -86,122 +86,118 @@ window.AGC.PDF = (() => {
       
       return `
         <tr style="background:${rowBg}; page-break-inside: avoid; break-inside: avoid;">
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;">${phase.name}</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;">${phase.hrs} hrs</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(sellingRate)}</td>
-          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(sellingTotal)}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;">${phase.name}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;">${phase.hrs} hrs</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(sellingRate)}</td>
+          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(sellingTotal)}</td>
         </tr>`;
     }).join("");
 
-    const finalEngRows = hasEngineering ? engRows : `<tr><td colspan="4" style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">No engineering services included.</td></tr>`;
+    const finalEngRows = hasEngineering ? engRows : `<tr><td colspan="4" style="padding:10px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">No engineering services included.</td></tr>`;
 
     return `
-      <div style="width:740px;padding:20px;font-family:Arial,Helvetica,sans-serif;color:#1e293b;background:#ffffff;font-size:10pt;line-height:1.4;">
+      <div style="width:720px;padding:15px;font-family:Arial,Helvetica,sans-serif;color:#1e293b;background:#ffffff;font-size:9pt;line-height:1.3;">
         
         <!-- Header -->
-        <div style="display:flex;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:8px;margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;border-bottom:2px solid #0f172a;padding-bottom:6px;margin-bottom:8px;">
           <div>
-            <h2 style="margin:0;color:#0f172a;font-size:18pt;text-transform:uppercase;letter-spacing:0.5px;">Al Gurg Automation &amp; Controls</h2>
-            <p style="margin:4px 0 0;color:#64748b;font-size:9pt;">
+            <h2 style="margin:0;color:#0f172a;font-size:15pt;text-transform:uppercase;letter-spacing:0.5px;">Al Gurg Automation &amp; Controls</h2>
+            <p style="margin:2px 0 0;color:#64748b;font-size:8pt;">
               Easa Saleh Al Gurg Group | Jebel Ali Industrial Area<br>
-              PO Box 325, Dubai, United Arab Emirates<br>
-              <strong>TRN:</strong> 100345678900003
+              PO Box 325, Dubai, United Arab Emirates | <strong>TRN:</strong> 100345678900003
             </p>
           </div>
           <div style="text-align:right;">
-            <div style="background:#0f172a;color:#fff;padding:5px 12px;font-weight:bold;font-size:9pt;border-radius:4px;display:inline-block;">
+            <div style="background:#0f172a;color:#fff;padding:4px 10px;font-weight:bold;font-size:8pt;border-radius:4px;display:inline-block;">
               COMMERCIAL QUOTATION
             </div>
-            <p style="margin:8px 0 0;font-size:9pt;color:#475569;"><strong>Date:</strong> ${currentDate}</p>
-            <p style="margin:2px 0 0;font-size:9pt;color:#475569;"><strong>Quotation No:</strong> ${quotationNo}</p>
-            <p style="margin:2px 0 0;font-size:9pt;color:#475569;"><strong>Revision:</strong> ${revisionNo}</p>
+            <p style="margin:4px 0 0;font-size:8pt;color:#475569;"><strong>Date:</strong> ${currentDate} | <strong>Rev:</strong> ${revisionNo}</p>
+            <p style="margin:2px 0 0;font-size:8pt;color:#475569;"><strong>Quotation No:</strong> ${quotationNo}</p>
           </div>
         </div>
 
         <!-- Project Info -->
-        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:10px 16px;border-radius:6px;margin-bottom:12px;font-size:10pt;">
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;padding:8px 12px;border-radius:4px;margin-bottom:8px;font-size:9pt;">
           <table style="width:100%;border-collapse:collapse;">
             <tr>
               <td><strong>Project Name:</strong> ${escapeHtml(estimateData.name || "Untitled Project")}</td>
               <td><strong>Currency:</strong> ${currency}</td>
             </tr>
             <tr>
-              <td style="padding-top:6px;"><strong>Client / End User:</strong> ${escapeHtml(estimateData.client || "—")}</td>
-              <td style="padding-top:6px;"><strong>Validity:</strong> 30 Days from Date of Issue</td>
+              <td style="padding-top:4px;"><strong>Client / End User:</strong> ${escapeHtml(estimateData.client || "—")}</td>
+              <td style="padding-top:4px;"><strong>Validity:</strong> 30 Days from Issue</td>
             </tr>
           </table>
         </div>
 
         <!-- Scope of Work -->
-        <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">Scope of Work</h3>
-        <ul style="margin:0 0 12px;padding-left:20px;color:#334155;font-size:9.5pt;line-height:1.35;">
+        <h3 style="font-size:10pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:2px;margin:0 0 4px;">Scope of Work</h3>
+        <ul style="margin:0 0 8px;padding-left:15px;color:#334155;font-size:8.5pt;line-height:1.3;">
           <li>Complete hardware provision and PLC/SCADA control philosophy implementation.</li>
           <li>Development of operator HMI graphics, alarm/event logging subsystems, and historian integration.</li>
-          <li>Factory Acceptance Testing (FAT) execution at AGC Dubai facility.</li>
-          <li>Site Acceptance Testing (SAT), loop calibration, and seamless plant commissioning.</li>
+          <li>Factory Acceptance Testing (FAT) execution at AGC Dubai facility and Site Acceptance Testing (SAT).</li>
         </ul>
 
         <!-- BOQ -->
-        <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">1. Bill of Quantities (Hardware &amp; Software)</h3>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
+        <h3 style="font-size:10pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:2px;margin:0 0 4px;">1. Bill of Quantities (Hardware &amp; Software)</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.5pt;">
           <thead>
-            <tr style="background:#0f172a;color:#ffffff; page-break-inside: avoid; break-inside: avoid;">
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:30px;text-align:center;font-weight:600;">#</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;font-weight:600;">Category & Description</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:70px;text-align:center;font-weight:600;">Qty</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:95px;text-align:right;font-weight:600;">Unit (${currency})</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:105px;text-align:right;font-weight:600;">Total (${currency})</th>
+            <tr style="background:#0f172a;color:#ffffff;">
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:25px;text-align:center;">#</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;">Category & Description</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:60px;text-align:center;">Qty</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:85px;text-align:right;">Unit (${currency})</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:95px;text-align:right;">Total (${currency})</th>
             </tr>
           </thead>
           <tbody>${boqRows}</tbody>
         </table>
 
         <!-- Engineering -->
-        <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">2. Engineering &amp; Site Services Breakdown</h3>
-        <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
+        <h3 style="font-size:10pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:2px;margin:0 0 4px;">2. Engineering &amp; Site Services Breakdown</h3>
+        <table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8.5pt;">
           <thead>
-            <tr style="background:#0f172a;color:#ffffff; page-break-inside: avoid; break-inside: avoid;">
-              <th style="padding:8px 7px;border:1px solid #0f172a;font-weight:600;">Engineering Phase</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:90px;text-align:center;font-weight:600;">Duration</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:95px;text-align:right;font-weight:600;">Rate (${currency}/hr)</th>
-              <th style="padding:8px 7px;border:1px solid #0f172a;width:105px;text-align:right;font-weight:600;">Total (${currency})</th>
+            <tr style="background:#0f172a;color:#ffffff;">
+              <th style="padding:5px 6px;border:1px solid #0f172a;">Engineering Phase</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:80px;text-align:center;">Duration</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:85px;text-align:right;">Rate (${currency}/hr)</th>
+              <th style="padding:5px 6px;border:1px solid #0f172a;width:95px;text-align:right;">Total (${currency})</th>
             </tr>
           </thead>
           <tbody>${finalEngRows}</tbody>
         </table>
 
         <!-- Payment Terms + Totals -->
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:20px;margin-bottom:16px;page-break-inside:avoid;break-inside:avoid;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:10px;margin-bottom:10px;page-break-inside:avoid;break-inside:avoid;">
           
-          <div style="width:50%;font-size:9pt;color:#334155;padding-right:15px;">
-            <div style="font-weight:700;color:#0f172a;margin-bottom:8px;">Commercial Terms &amp; Conditions:</div>
-            <ul style="margin:0;padding-left:15px;line-height:1.4;">
-              <li style="margin-bottom: 4px;"><strong>Payment:</strong> 40% Advance (against ABG), 40% upon FAT completion, 20% upon SAT &amp; Handover.</li>
-              <li style="margin-bottom: 4px;"><strong>Delivery:</strong> 8-10 weeks from receipt of approved drawings and advance <em>(EXW AGC Jebel Ali Facility)</em>.</li>
-              <li style="margin-bottom: 4px;"><strong>Warranty:</strong> 12 months from commissioning or 18 months from delivery.</li>
-              <li style="margin-bottom: 4px;"><strong>Exclusions:</strong> Civil works, primary cable pulling, cable trays, and third-party software licensing not explicitly mentioned are excluded.</li>
-              <li style="margin-bottom: 4px;"><strong>Bank Details:</strong> Emirates NBD, Jebel Ali Branch<br><strong>Acct:</strong> 1012345678901 | <strong>Swift:</strong> EBILAEAD</li>
+          <div style="width:50%;font-size:8pt;color:#334155;padding-right:10px;">
+            <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">Commercial Terms &amp; Conditions:</div>
+            <ul style="margin:0;padding-left:12px;line-height:1.3;">
+              <li style="margin-bottom: 2px;"><strong>Payment:</strong> 40% Advance (against ABG), 40% upon FAT, 20% upon SAT.</li>
+              <li style="margin-bottom: 2px;"><strong>Delivery:</strong> 8-10 weeks (EXW Jebel Ali Facility).</li>
+              <li style="margin-bottom: 2px;"><strong>Warranty:</strong> 12 months from commissioning.</li>
+              <li style="margin-bottom: 2px;"><strong>Bank:</strong> Emirates NBD, Acct: 1012345678901</li>
             </ul>
           </div>
           
-          <div style="width:45%;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:6px;font-size:9.5pt;">
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <div style="width:45%;background:#f8fafc;border:1px solid #cbd5e1;padding:8px;border-radius:4px;font-size:8.5pt;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
               <span>Materials Subtotal:</span>
               <strong>${currency} ${formatCurrency(totals.sellingBoqTotal)}</strong>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
               <span>Engineering Subtotal:</span>
               <strong>${currency} ${formatCurrency(totals.sellingEngCost)}</strong>
             </div>
-            <div style="display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;padding-top:5px;margin-bottom:5px;">
-              <span style="font-weight:600;">Total Price (Excl. VAT):</span>
+            <div style="display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;padding-top:3px;margin-bottom:3px;">
+              <span style="font-weight:600;">Total (Excl. VAT):</span>
               <span style="font-weight:600;">${currency} ${formatCurrency(totals.sellingSubtotal)}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#475569;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;color:#475569;">
               <span>VAT (5%):</span>
               <span>${currency} ${formatCurrency(totals.vatAmount)}</span>
             </div>
-            <div style="display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding-top:8px;font-size:12pt;color:#0f172a;">
+            <div style="display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding-top:5px;font-size:10.5pt;color:#0f172a;">
               <strong>Grand Total:</strong>
               <strong>${currency} ${formatCurrency(totals.grandTotal)}</strong>
             </div>
@@ -209,22 +205,21 @@ window.AGC.PDF = (() => {
         </div>
 
         <!-- Signatures -->
-        <div style="display:flex;justify-content:space-between;margin-top:30px;margin-bottom:12px;font-size:9.5pt;page-break-inside:avoid;break-inside:avoid;">
-          <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;color:#475569;line-height:1.4;">
+        <div style="display:flex;justify-content:space-between;margin-top:15px;margin-bottom:8px;font-size:8.5pt;page-break-inside:avoid;break-inside:avoid;">
+          <div style="width:45%;border-top:1px solid #94a3b8;padding-top:6px;color:#475569;line-height:1.3;">
             <strong>Prepared By:</strong><br>
             <span style="color:#0f172a;font-weight:600;">Christian Tosita Espinosa</span><br>
-            Instrumentation and Control Engineer<br>
-            Al Gurg Automation &amp; Controls
+            I&amp;C Engineer | Al Gurg Automation &amp; Controls
           </div>
-          <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;color:#475569;">
-            <strong>Approved &amp; Accepted By (Client):</strong><br>
-            Authorized Signature &amp; Company Stamp<br>
+          <div style="width:45%;border-top:1px solid #94a3b8;padding-top:6px;color:#475569;">
+            <strong>Approved By (Client):</strong><br>
+            Authorized Signature &amp; Stamp<br>
             Date: ________________________
           </div>
         </div>
 
         <!-- Footer -->
-        <div style="border-top:1px solid #cbd5e1;padding-top:10px;display:flex;justify-content:space-between;font-size:8pt;color:#64748b;page-break-inside:avoid;break-inside:avoid;">
+        <div style="border-top:1px solid #cbd5e1;padding-top:6px;display:flex;justify-content:space-between;font-size:7.5pt;color:#64748b;page-break-inside:avoid;break-inside:avoid;">
           <span>Confidential — Al Gurg Automation &amp; Controls</span>
           <span>Generated via AGC SCADA Hub</span>
         </div>
@@ -281,7 +276,6 @@ window.AGC.PDF = (() => {
   }
 
   function generateRequirementsPdf(tableElement, options = {}) {
-    // Requirements PDF logic remains identical...
     if (!window.html2pdf) {
       alert("PDF library is still loading. Please wait.");
       return;
@@ -352,7 +346,7 @@ window.AGC.PDF = (() => {
         .from(container)
         .save()
         .catch(err => {
-          console.error("PDF generation failed:", err);
+          console.error("Requirements PDF generation failed:", err);
           alert("Could not generate Requirements PDF.");
         })
         .finally(() => {
