@@ -104,15 +104,15 @@ document.addEventListener("DOMContentLoaded", () => {
       container.appendChild(card);
     });
 
-    // Attach Status Update Listeners
+   // Attach Status Update Listeners
     document.querySelectorAll('.status-update-select').forEach(select => {
       select.addEventListener('change', async (e) => {
         const id = e.target.getAttribute('data-id');
         const snag = punchlist.find(s => s.id === id);
         if (snag) {
           snag.status = e.target.value;
-          await window.DB.put("punchlist", snag);
-          punchlist = await window.DB.getAll("punchlist");
+          await DB.put("punchlist", snag); // Removed window. prefix
+          punchlist = await DB.getAll("punchlist"); // Removed window. prefix
           renderPunchlist();
         }
       });
@@ -123,13 +123,12 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.addEventListener('click', async (e) => {
         const id = e.target.getAttribute('data-id');
         if (confirm("Permanently delete this snag?")) {
-          await window.DB.delete("punchlist", id);
-          punchlist = await window.DB.getAll("punchlist");
+          await DB.delete("punchlist", id); // Removed window. prefix
+          punchlist = await DB.getAll("punchlist"); // Removed window. prefix
           renderPunchlist();
         }
       });
     });
-  }
 
   // --- Modal Logic ---
  // --- Modal Logic ---
