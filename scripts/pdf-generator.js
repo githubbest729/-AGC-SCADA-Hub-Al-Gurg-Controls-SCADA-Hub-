@@ -37,7 +37,8 @@ window.AGC.PDF = (() => {
 
     const randomNum = Math.floor(1000 + Math.random() * 9000);
     const quotationNo = `AGC-QT-${new Date().getFullYear()}-${randomNum}`;
-    const filename = `AGC-Quotation-${quotationNo}.pdf`;
+    const revisionNo = estimateData.revision || "00"; // Added Revision Control
+    const filename = `AGC-Quotation-${quotationNo}-Rev${revisionNo}.pdf`;
     const currentDate = new Date().toLocaleDateString("en-GB", {
       year: "numeric", month: "short", day: "numeric"
     });
@@ -119,6 +120,7 @@ window.AGC.PDF = (() => {
             </div>
             <p style="margin:8px 0 0;font-size:9pt;color:#475569;"><strong>Date:</strong> ${currentDate}</p>
             <p style="margin:2px 0 0;font-size:9pt;color:#475569;"><strong>Quotation No:</strong> ${quotationNo}</p>
+            <p style="margin:2px 0 0;font-size:9pt;color:#475569;"><strong>Revision:</strong> ${revisionNo}</p>
           </div>
         </div>
 
@@ -180,10 +182,11 @@ window.AGC.PDF = (() => {
           <div style="width:50%;font-size:9pt;color:#334155;padding-right:15px;">
             <div style="font-weight:700;color:#0f172a;margin-bottom:8px;">Commercial Terms &amp; Conditions:</div>
             <ul style="margin:0;padding-left:15px;line-height:1.4;">
-              <li style="margin-bottom: 4px;"><strong>Payment:</strong> 40% Advance, 40% upon FAT completion, 20% upon SAT &amp; Handover.</li>
-              <li style="margin-bottom: 4px;"><strong>Delivery:</strong> 8-10 weeks from receipt of approved drawings and advance.</li>
+              <li style="margin-bottom: 4px;"><strong>Payment:</strong> 40% Advance (against ABG), 40% upon FAT completion, 20% upon SAT &amp; Handover.</li>
+              <li style="margin-bottom: 4px;"><strong>Delivery:</strong> 8-10 weeks from receipt of approved drawings and advance <em>(EXW AGC Jebel Ali Facility)</em>.</li>
               <li style="margin-bottom: 4px;"><strong>Warranty:</strong> 12 months from commissioning or 18 months from delivery.</li>
               <li style="margin-bottom: 4px;"><strong>Exclusions:</strong> Civil works, primary cable pulling, cable trays, and third-party software licensing not explicitly mentioned are excluded.</li>
+              <li style="margin-bottom: 4px;"><strong>Bank Details:</strong> Emirates NBD, Jebel Ali Branch<br><strong>Acct:</strong> 1012345678901 | <strong>Swift:</strong> EBILAEAD</li>
             </ul>
           </div>
           
@@ -213,9 +216,10 @@ window.AGC.PDF = (() => {
 
         <!-- Signatures -->
         <div style="display:flex;justify-content:space-between;margin-top:30px;margin-bottom:12px;font-size:9.5pt;page-break-inside:avoid;break-inside:avoid;">
-          <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;color:#475569;">
+          <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;color:#475569;line-height:1.4;">
             <strong>Prepared By:</strong><br>
-            Estimation &amp; Proposal Engineering Team<br>
+            <span style="color:#0f172a;font-weight:600;">Christian Tosita Espinosa</span><br>
+            Instrumentation and Control Engineer<br>
             Al Gurg Automation &amp; Controls
           </div>
           <div style="width:42%;border-top:1px solid #94a3b8;padding-top:8px;color:#475569;">
@@ -300,7 +304,7 @@ window.AGC.PDF = (() => {
       <h2 style="color: #0f172a; margin-top: 0;">Project Requirements Specification</h2>
       <p style="color: #475569; font-size: 10pt; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 20px;">
         Generated: ${new Date().toLocaleString()}<br>
-        Prepared By: ${escapeHtml(options.preparedBy || "AGC SCADA Hub")}
+        Prepared By: ${escapeHtml(options.preparedBy || "Christian Tosita Espinosa | AGC SCADA Hub")}
       </p>
     `;
     container.appendChild(header);
