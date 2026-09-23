@@ -28,8 +28,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- Enterprise Initialization ---
-  // Safely wait for the global DB to be ready without brittle timeouts
- // --- Enterprise Initialization ---
   async function initIo() {
     if (typeof DB === "undefined") {
       console.error("Critical: Database module not loaded.");
@@ -37,16 +35,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      await window.DB.init();
-      ioTags = await window.DB.getAll("io_tags");
+      await DB.init();
+      ioTags = await DB.getAll("io_tags");
       
       // Seed data if empty
       if (ioTags.length === 0) {
         const res = await fetch("data/io-tags-sample.json");
         if (res.ok) {
           const sampleTags = await res.json();
-          for (const tag of sampleTags) await window.DB.put("io_tags", tag);
-          ioTags = await window.DB.getAll("io_tags");
+          for (const tag of sampleTags) await DB.put("io_tags", tag);
+          ioTags = await DB.getAll("io_tags");
         }
       }
     } catch (e) {
@@ -134,8 +132,8 @@ document.addEventListener("DOMContentLoaded", () => {
     tbody.querySelectorAll("[data-del-io]").forEach(btn => {
       btn.addEventListener("click", async () => {
         if (confirm("Permanently delete this I/O tag?")) {
-          await window.DB.delete("io_tags", btn.dataset.delIo);
-          ioTags = await window.DB.getAll("io_tags");
+          await DB.delete("io_tags", btn.dataset.delIo);
+          ioTags = await DB.getAll("io_tags");
           renderIoTable();
         }
       });
@@ -208,8 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
         notes: document.getElementById("t-notes").value.trim()
       };
 
-      await window.DB.put("io_tags", newTag);
-      ioTags = await window.DB.getAll("io_tags");
+      await DB.put("io_tags", newTag);
+      ioTags = await DB.getAll("io_tags");
       renderIoTable();
       modalOverlay.classList.add("hidden");
     });
@@ -273,7 +271,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const cols = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(c => c.replace(/^"\vert{}"$/g, "").trim());
             
             if (cols[0]) {
-              await window.DB.put("io_tags", {
+              await DB.put("io_tags", {
                 id: window.crypto?.randomUUID ? window.crypto.randomUUID() : Date.now().toString() + i,
                 tagName: cols[0] || "", 
                 description: cols[1] || "", 
@@ -288,7 +286,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
           }
           
-          ioTags = await window.DB.getAll("io_tags");
+          ioTags = await DB.getAll("io_tags");
           renderIoTable();
           alert(`Successfully imported ${successCount} I/O tags.`);
         } catch (err) {
