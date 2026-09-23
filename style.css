@@ -207,7 +207,9 @@ p { margin: 0; }
   min-height: 110px; /* reserves space for stats */
 }
 
+/* Reserve space on the box itself so it holds height even before JS fills it */
 .stat-box {
+  min-height: 84px; /* bumped from 74 → matches real content height (padding+value+label) more closely */
   background: var(--slate-900);
   border: 1px solid var(--slate-800);
   border-left: 4px solid var(--electric-blue);
@@ -221,10 +223,12 @@ p { margin: 0; }
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 16px;
-  min-height: 220px; /* reserves space for the three cards — fixes CLS */
+  /* space reserved per-card via .mini-list min-height below —
+     adapts correctly whether the grid renders 1, 2, or 3 columns */
 }
-
-.mini-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem; }
+/* This is the key fix: reserve space per-card, not per-grid.
+   Works correctly whether the grid renders 1, 2, or 3 columns. */
+.mini-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;  min-height: 160px;}
 .mini-list .mini-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--slate-800); padding-bottom: 6px; }
 .mini-list .muted { color: var(--slate-400); }
 
