@@ -481,7 +481,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // =======================================================
-  // NEW WYSIWYG PRINT PREVIEW MODAL
+  // WYSIWYG PRINT PREVIEW MODAL
   // =======================================================
   document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
@@ -498,18 +498,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
     
-    // Ensure draft estimates have an ID so the preview Quotation Number matches the downloaded PDF
     if (!e.id) e.id = crypto.randomUUID();
 
-    // 1. Fetch the raw document HTML
     const previewHtml = window.AGC.PDF.getQuotationHtml(e, t);
 
-    // 2. Widen the modal dynamically to fit the A4 page layout
     const modalBox = document.getElementById("modal-box");
     const originalMaxWidth = modalBox.style.maxWidth;
     modalBox.style.maxWidth = "820px"; 
 
-    // 3. Inject the preview into the Modal
     openModal({
       title: "Print Preview — Review Quotation",
       bodyHtml: `
@@ -543,7 +539,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       ]
     });
 
-    // 4. Ensure clicking the generic "X" close button also restores the modal width
     document.getElementById("modal-close").onclick = () => {
       modalBox.style.maxWidth = originalMaxWidth;
       closeModal();
@@ -677,6 +672,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (match) {
         item.description = `${match.vendor} ${match.sku} — ${match.description}`;
         item.unitCost = Number(match.unitCost) || 0;
+        // Automatically sync unit when selecting from catalog
+        const defaultUnit = getUnitsForCategory(item.category)[0];
+        if (defaultUnit) item.unit = defaultUnit;
       }
     }
     saveDraft();
@@ -714,6 +712,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!costSummaryEl) return;
     const e = DATA.currentEstimate;
     const t = calcTotals(e);
+    
+    // UPDATED LABEL: Clearly indicates Gross Margin Divisor formula
     costSummaryEl.innerHTML = `
       <div class="row muted" style="font-size: 0.85em"><span>Raw Materials Cost</span><span>${fmtMoney(t.rawBoqTotal, e.currency)}</span></div>
       <div class="row muted" style="font-size: 0.85em"><span>Raw Engineering Cost (${t.totalHours} hrs)</span><span>${fmtMoney(t.rawEngCost, e.currency)}</span></div>
@@ -721,7 +721,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <span>Internal Base Cost</span><span>${fmtMoney(t.rawSubtotal, e.currency)}</span>
       </div>
       <div class="row" style="color:var(--orange-400)"><span>+ Contingency (${e.contingency}%)</span><span>${fmtMoney(t.contingencyAmt, e.currency)}</span></div>
-      <div class="row" style="color:var(--emerald-400)"><span>+ Net Profit Margin (${e.margin}%)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
+      <div class="row" style="color:var(--emerald-400)"><span>+ Net Profit Margin (${e.margin}% Gross Margin Divisor)</span><span>${fmtMoney(t.marginAmt, e.currency)}</span></div>
       
       <div class="row" style="font-weight:700; border-top:2px solid var(--slate-700); padding-top:6px; margin-top:6px;">
         <span>Client Selling Subtotal</span><span>${fmtMoney(t.sellingSubtotal, e.currency)}</span>
