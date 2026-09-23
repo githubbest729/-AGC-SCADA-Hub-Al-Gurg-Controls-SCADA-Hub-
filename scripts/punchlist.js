@@ -1,9 +1,10 @@
 /* =========================================================
    AGC SCADA Hub — punchlist.js
    Cross-functional site snag tracking with WhatsApp integration.
+   (Upgraded to IndexedDB)
    ========================================================= */
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const container = document.getElementById("punchlist-container");
   const addBtn = document.getElementById("add-punchlist-btn");
   const modalOverlay = document.getElementById("modal-overlay");
@@ -12,14 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalFooter = document.getElementById("modal-footer");
   const modalClose = document.getElementById("modal-close");
 
-  // Load existing punchlist from LocalStorage
-  let punchlist = JSON.parse(localStorage.getItem("agc_punchlist")) || [];
+  // 1. Fetch initial data from IndexedDB
+  let punchlist = await DB.getAll("punchlist");
 
-  function saveAndRender() {
-    localStorage.setItem("agc_punchlist", JSON.stringify(punchlist));
-    renderPunchlist();
-  }
-
+  // 2. Render function
   function renderPunchlist() {
     if (!container) return;
     container.innerHTML = "";
@@ -29,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    punchlist.forEach((item, index) => {
+    punchlist.forEach((item) => {
       const card = document.createElement("div");
       card.className = "card pl-card";
 
@@ -62,14 +59,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         ${item.notes ? `<div class="pl-card-notes">${item.notes}</div>` : ''}
         <div class="pl-card-actions">
-          <select class="status-update-select" data-index="${index}">
+          <select class="status-update-select" data-id="${item.id}">
             <option value="Open" ${item.status === 'Open' ? 'selected' : ''}>Open</option>
             <option value="In Progress" ${item.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
             <option value="Blocked" ${item.status === 'Blocked' ? 'selected' : ''}>Blocked</option>
             <option value="Delivered" ${item.status === 'Delivered' ? 'selected' : ''}>Closed / Fixed</option>
           </select>
           <a href="${waLink}" target="_blank" class="btn btn-sm btn-whatsapp" style="text-decoration:none; display:inline-flex;">📱 Share to WA</a>
-          <button class="btn btn-sm btn-danger delete-snag-btn" data-index="${index}">✕</button>
+          <button class="btn btn-sm btn-danger delete-snag-btn" data-id="${item.id}">✕</button>
         </div>
       `;
       container.appendChild(card);
@@ -77,20 +74,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Attach Status Update Listeners
     document.querySelectorAll('.status-update-select').forEach(select => {
-      select.addEventListener('change', (e) => {
-        const idx = e.target.getAttribute('data-index');
-        punchlist[idx].status = e.target.value;
-        saveAndRender();
+      select.addEventListener('change', async (e) => {
+        const id = e.target.getAttribute('data-id');
+        const snag = punchlist.find(s => s.id === id);
+        if (snag) {
+          snag.status = e.target.value;
+          await DB.put("punchlist", snag); // Update in IndexedDB
+          punchlist = await DB.getAll("punchlist"); // Refresh local array
+          renderPunchlist(); // Re-render
+        }
       });
     });
 
     // Attach Delete Listeners
     document.querySelectorAll('.delete-snag-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const idx = e.target.getAttribute('data-index');
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
         if (confirm("Are you sure you want to delete this snag?")) {
-          punchlist.splice(idx, 1);
-          saveAndRender();
+          await DB.delete("punchlist", id); // Delete from IndexedDB
+          punchlist = await DB.getAll("punchlist"); // Refresh local array
+          renderPunchlist(); // Re-render
         }
       });
     });
@@ -131,7 +134,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modalOverlay.classList.add("hidden");
       });
 
-      document.getElementById('save-snag-btn').addEventListener('click', () => {
+      document.getElementById('save-snag-btn').addEventListener('click', async () => {
         const title = document.getElementById('snag-title').value.trim();
         const discipline = document.getElementById('snag-discipline').value;
         const notes = document.getElementById('snag-notes').value.trim();
@@ -141,15 +144,19 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        punchlist.push({
+        const newSnag = {
+          id: crypto.randomUUID(), // Native browser UUID generation
           title,
           discipline,
           notes,
           status: "Open",
           date: new Date().toISOString().split('T')[0]
-        });
+        };
 
-        saveAndRender();
+        await DB.put("punchlist", newSnag); // Save to IndexedDB
+        punchlist = await DB.getAll("punchlist"); // Refresh list
+        renderPunchlist(); // Re-render
+        
         modalOverlay.classList.add("hidden");
       });
     });
