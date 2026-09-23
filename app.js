@@ -39,8 +39,62 @@
 
   const PHASES = ["Design", "Programming", "FAT", "Commissioning", "SAT"];
   const REQ_STATUSES = ["Open", "In Progress", "Blocked", "Delivered"];
-  const BOQ_CATEGORIES = ["PLC", "SCADA Tags", "I/O Module", "Network Switch", "HMI Panel", "Server/Workstation", "Cabling", "Software License", "Other"];
-  const BOQ_UNITS = ["pcs", "tags", "pts", "m", "lot", "hrs"];
+
+  // Fallback lists used until data/boq-catalog.json has loaded (or if it
+  // fails to load, e.g. first-ever offline load before the SW has cached it).
+  const FALLBACK_CATEGORIES = ["PLC", "SCADA Tags", "I/O Module", "Network Switch", "HMI Panel", "Server/Workstation", "Cabling", "Software License", "Other"];
+  const FALLBACK_UNITS = ["pcs", "tags", "pts", "m", "lot", "hrs"];
+
+  /* ---------------- BOQ Catalog (data/boq-catalog.json) ---------------- */
+  const CATALOG_CACHE_KEY = "agc_scada_hub_catalog_cache_v1";
+  let CATALOG = null; // populated by loadCatalog()
+
+  async function loadCatalog() {
+    try {
+      const res = await fetch("data/boq-catalog.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      CATALOG = await res.json();
+      // Cache a copy so the catalog is still usable fully offline even
+      // before the service worker has taken over fetch handling.
+      try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify(CATALOG)); } catch (e) { /* ignore quota errors */ }
+    } catch (err) {
+      console.warn("Could not fetch data/boq-catalog.json, trying local cache.", err);
+      try {
+        const cached = localStorage.getItem(CATALOG_CACHE_KEY);
+        if (cached) CATALOG = JSON.parse(cached);
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  function getCategoryLabels() {
+    if (CATALOG && Array.isArray(CATALOG.categories) && CATALOG.categories.length) {
+      return CATALOG.categories.map(c => c.label);
+    }
+    return FALLBACK_CATEGORIES;
+  }
+
+  function getUnitsForCategory(categoryLabel) {
+    if (CATALOG && Array.isArray(CATALOG.categories)) {
+      const cat = CATALOG.categories.find(c => c.label === categoryLabel);
+      if (cat && cat.unit) return [cat.unit, ...FALLBACK_UNITS.filter(u => u !== cat.unit)];
+    }
+    return FALLBACK_UNITS;
+  }
+
+  function getCatalogItemsForCategory(categoryLabel) {
+    if (CATALOG && Array.isArray(CATALOG.categories)) {
+      const cat = CATALOG.categories.find(c => c.label === categoryLabel);
+      if (cat) return cat.items || [];
+    }
+    return [];
+  }
+
+  function getEngineeringRates() {
+    if (CATALOG && CATALOG.engineeringRates && Array.isArray(CATALOG.engineeringRates.rates)) {
+      return CATALOG.engineeringRates.rates;
+    }
+    return [];
+  }
 
   /* ---------------- State ---------------- */
   let DATA = loadData();
@@ -330,6 +384,7 @@
   const estClientEl = document.getElementById("est-client");
   const estCurrencyEl = document.getElementById("est-currency");
   const estRateEl = document.getElementById("est-rate");
+  const estRoleEl = document.getElementById("est-role");
   const estContingencyEl = document.getElementById("est-contingency");
   const estMarginEl = document.getElementById("est-margin");
   const estEngHoursEl = document.getElementById("est-eng-hours");
@@ -342,8 +397,36 @@
     el.addEventListener("change", () => { syncEstimateFromForm(); renderCostSummary(); saveData(); });
   });
 
+  // Picking an Engineering Role from the catalog auto-fills the hourly rate field
+  estRoleEl.addEventListener("change", () => {
+    const rates = getEngineeringRates();
+    const match = rates.find(r => r.role === estRoleEl.value);
+    if (match) {
+      estRateEl.value = match.hourlyRate;
+      syncEstimateFromForm();
+      renderCostSummary();
+      saveData();
+    }
+  });
+
+  function populateRoleDropdown() {
+    const rates = getEngineeringRates();
+    if (!rates.length) {
+      estRoleEl.innerHTML = `<option value="">Catalog not loaded</option>`;
+      estRoleEl.disabled = true;
+      return;
+    }
+    estRoleEl.disabled = false;
+    estRoleEl.innerHTML = `<option value="">— Custom rate —</option>` +
+      rates.map(r => `<option value="${escapeAttr(r.role)}">${escapeHtml(r.role)} (${fmtMoney(r.hourlyRate, (CATALOG && CATALOG.currency) || "AED")}/hr)</option>`).join("");
+  }
+
   document.getElementById("add-boq-row").addEventListener("click", () => {
-    DATA.currentEstimate.boq.push({ id: uid(), category: BOQ_CATEGORIES[0], description: "", qty: 1, unit: BOQ_UNITS[0], unitCost: 0 });
+    const defaultCategory = getCategoryLabels()[0];
+    DATA.currentEstimate.boq.push({
+      id: uid(), category: defaultCategory, catalogSku: "",
+      description: "", qty: 1, unit: getUnitsForCategory(defaultCategory)[0], unitCost: 0
+    });
     saveData();
     renderBoqTable();
     renderCostSummary();
@@ -385,20 +468,30 @@
 
   function renderBoqTable() {
     const boq = DATA.currentEstimate.boq;
+    const categories = getCategoryLabels();
     boqTbody.innerHTML = "";
     boq.forEach(item => {
+      const catalogItems = getCatalogItemsForCategory(item.category);
+      const units = getUnitsForCategory(item.category);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
           <select data-field="category" data-id="${item.id}">
-            ${BOQ_CATEGORIES.map(c => `<option ${item.category===c?"selected":""}>${c}</option>`).join("")}
+            ${categories.map(c => `<option ${item.category===c?"selected":""}>${c}</option>`).join("")}
+          </select>
+        </td>
+        <td>
+          <select data-field="catalogSku" data-id="${item.id}" ${catalogItems.length ? "" : "disabled"}>
+            <option value="">${catalogItems.length ? "— Select catalog item —" : "No catalog items"}</option>
+            ${catalogItems.map(ci => `<option value="${escapeAttr(ci.sku)}" ${item.catalogSku===ci.sku?"selected":""}>${escapeHtml(ci.vendor)} — ${escapeHtml(ci.description)}</option>`).join("")}
           </select>
         </td>
         <td><input type="text" class="boq-input" style="min-width:140px" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description / tag name"/></td>
         <td><input type="number" class="boq-input" data-field="qty" data-id="${item.id}" value="${item.qty}" min="0" step="1"/></td>
         <td>
           <select data-field="unit" data-id="${item.id}">
-            ${BOQ_UNITS.map(u => `<option ${item.unit===u?"selected":""}>${u}</option>`).join("")}
+            ${units.map(u => `<option ${item.unit===u?"selected":""}>${u}</option>`).join("")}
           </select>
         </td>
         <td><input type="number" class="boq-input" data-field="unitCost" data-id="${item.id}" value="${item.unitCost}" min="0" step="0.01"/></td>
@@ -408,7 +501,10 @@
       boqTbody.appendChild(tr);
     });
 
-    boqTbody.querySelectorAll("[data-field]").forEach(el => {
+    boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el => {
+      el.addEventListener("change", handleBoqCatalogSelect);
+    });
+    boqTbody.querySelectorAll("[data-field]:not([data-field='catalogSku'])").forEach(el => {
       el.addEventListener("input", handleBoqFieldChange);
       el.addEventListener("change", handleBoqFieldChange);
     });
@@ -421,9 +517,54 @@
       }));
   }
 
+  /**
+   * When a BOQ row's Category dropdown changes, re-render so the
+   * Catalog Item + Unit dropdowns refresh to match the new category.
+   */
+  function handleBoqCategoryChange(id, newCategory) {
+    const item = DATA.currentEstimate.boq.find(i => i.id === id);
+    if (!item) return;
+    item.category = newCategory;
+    item.catalogSku = "";
+    item.unit = getUnitsForCategory(newCategory)[0];
+    saveData();
+    renderBoqTable();
+    renderCostSummary();
+  }
+
+  /**
+   * When a catalog item is picked from the "Catalog Item" dropdown,
+   * auto-fill description and unit cost from data/boq-catalog.json.
+   */
+  function handleBoqCatalogSelect(e) {
+    const id = e.target.dataset.id;
+    const sku = e.target.value;
+    const item = DATA.currentEstimate.boq.find(i => i.id === id);
+    if (!item) return;
+
+    item.catalogSku = sku;
+    if (sku) {
+      const catalogItems = getCatalogItemsForCategory(item.category);
+      const match = catalogItems.find(ci => ci.sku === sku);
+      if (match) {
+        item.description = `${match.vendor} ${match.sku} — ${match.description}`;
+        item.unitCost = Number(match.unitCost) || 0;
+      }
+    }
+    saveData();
+    renderBoqTable();
+    renderCostSummary();
+  }
+
   function handleBoqFieldChange(e) {
     const id = e.target.dataset.id;
     const field = e.target.dataset.field;
+
+    if (field === "category") {
+      handleBoqCategoryChange(id, e.target.value);
+      return;
+    }
+
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
     if (field === "qty" || field === "unitCost") {
@@ -515,6 +656,7 @@
     estContingencyEl.value = e.contingency;
     estMarginEl.value = e.margin;
     estEngHoursEl.value = e.engHours;
+    populateRoleDropdown();
     renderBoqTable();
     renderCostSummary();
     renderEstimatesTable();
@@ -700,6 +842,112 @@
     });
   });
 
+  /* =========================================================
+     INTEGRATIONS: CSV export, PDF generation, ClickUp/n8n sync
+     ========================================================= */
+
+  // --- Cost Estimation → CSV (scripts/export.js) ---
+  document.getElementById("export-csv-btn").addEventListener("click", () => {
+    syncEstimateFromForm();
+    const e = DATA.currentEstimate;
+    if (!e.boq.length) {
+      alert("Add at least one BOQ line item before exporting.");
+      return;
+    }
+    const totals = calcTotals(e);
+    window.AGC.Export.exportBoqToCsv(e, totals);
+  });
+
+  // --- Requirements & Stakeholder Matrix → branded PDF (scripts/pdf-generator.js) ---
+  document.getElementById("generate-req-pdf-btn").addEventListener("click", () => {
+    if (!DATA.requirements.length) {
+      alert("Log at least one requirement before generating the specification PDF.");
+      return;
+    }
+    const tableEl = document.getElementById("requirements-table");
+    window.AGC.PDF.generateRequirementsPdf(tableEl, { preparedBy: "AGC SCADA Hub" });
+  });
+
+  // --- Execution Board → ClickUp / n8n webhook sync (scripts/api.js) ---
+  document.getElementById("webhook-settings-btn").addEventListener("click", openWebhookSettingsModal);
+  document.getElementById("sync-clickup-btn").addEventListener("click", () => syncBoard("clickup"));
+  document.getElementById("sync-n8n-btn").addEventListener("click", () => syncBoard("n8n"));
+
+  function openWebhookSettingsModal() {
+    const cfg = window.AGC.Api.getWebhookConfig();
+    openModal({
+      title: "Webhook Settings",
+      bodyHtml: `
+        <p style="font-size:0.82rem; color:var(--slate-400); margin-bottom:12px;">
+          Paste in your ClickUp automation webhook and/or n8n Webhook node URL. These are stored only on this device and used to push Execution Board updates when you tap "Sync".
+        </p>
+        <label>ClickUp Webhook URL
+          <input type="text" id="w-clickup" value="${escapeAttr(cfg.clickup || "")}" placeholder="https://... (ClickUp automation / middleware endpoint)"/>
+        </label>
+        <label>n8n Webhook URL
+          <input type="text" id="w-n8n" value="${escapeAttr(cfg.n8n || "")}" placeholder="https://your-n8n-host/webhook/..."/>
+        </label>
+      `,
+      footerButtons: [
+        { label: "Cancel", className: "btn btn-ghost", onClick: closeModal },
+        {
+          label: "Save", className: "btn btn-primary", onClick: () => {
+            const newCfg = {
+              clickup: document.getElementById("w-clickup").value.trim(),
+              n8n: document.getElementById("w-n8n").value.trim()
+            };
+            window.AGC.Api.saveWebhookConfig(newCfg);
+            closeModal();
+          }
+        }
+      ]
+    });
+  }
+
+  async function syncBoard(target) {
+    if (!DATA.tasks.length) {
+      alert("No execution tasks to sync yet.");
+      return;
+    }
+    const cfg = window.AGC.Api.getWebhookConfig();
+    if (target === "clickup" && !cfg.clickup) { openWebhookSettingsModal(); return; }
+    if (target === "n8n" && !cfg.n8n) { openWebhookSettingsModal(); return; }
+
+    const btn = document.getElementById(target === "clickup" ? "sync-clickup-btn" : "sync-n8n-btn");
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Syncing…";
+
+    try {
+      if (target === "n8n") {
+        const result = await window.AGC.Api.syncFullBoardToN8n(DATA.tasks);
+        reportSyncResult(result, `${DATA.tasks.length} task(s) sent to n8n.`);
+      } else {
+        // ClickUp: send each task individually so it maps to one card per task
+        let successCount = 0;
+        for (const task of DATA.tasks) {
+          const result = await window.AGC.Api.syncTaskToClickUp(task);
+          if (result.ok) successCount++;
+        }
+        reportSyncResult(
+          { ok: successCount === DATA.tasks.length, error: successCount < DATA.tasks.length ? `${DATA.tasks.length - successCount} task(s) failed to sync.` : null },
+          `${successCount}/${DATA.tasks.length} task(s) synced to ClickUp.`
+        );
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }
+
+  function reportSyncResult(result, successMessage) {
+    if (result.ok) {
+      alert(`✅ ${successMessage}`);
+    } else {
+      alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe and saved locally — you can retry once you're back online or the webhook is reachable.`);
+    }
+  }
+
   /* ---------------- Utilities ---------------- */
   function escapeHtml(str) {
     return String(str ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -714,9 +962,19 @@
     renderKanban();
   }
 
-  function init() {
+  async function init() {
     updateOnlineStatus();
+
+    // Render immediately with fallback lists so the UI is usable at once,
+    // then re-render the estimation panel once the catalog has (hopefully) loaded.
     renderAll();
+    await loadCatalog();
+    if (document.getElementById("panel-estimation").classList.contains("active")) {
+      renderEstimation();
+    } else {
+      // keep dropdowns fresh even if the user hasn't opened the tab yet
+      populateRoleDropdown();
+    }
 
     // Register service worker for offline caching
     if ("serviceWorker" in navigator) {

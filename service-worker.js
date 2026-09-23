@@ -4,7 +4,7 @@
    on-site with poor or no connectivity.
    ========================================================= */
 
-const CACHE_VERSION = "agc-scada-hub-v1.0.0";
+const CACHE_VERSION = "agc-scada-hub-v1.1.0";
 const CACHE_NAME = `${CACHE_VERSION}`;
 
 // Files that make up the app shell — cached on install.
@@ -17,14 +17,32 @@ const APP_SHELL = [
   "./app.js",
   "./manifest.json",
   "./icons/icon-192x192.png",
-  "./icons/icon-512x512.png"
+  "./icons/icon-512x512.png",
+  "./data/boq-catalog.json",
+  "./scripts/export.js",
+  "./scripts/pdf-generator.js",
+  "./scripts/api.js"
+];
+
+// Third-party assets cached opportunistically (best-effort — install
+// should not fail if the CDN is briefly unreachable at install time).
+const OPTIONAL_SHELL = [
+  "https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js"
 ];
 
 // ---- Install: pre-cache the app shell ----
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_SHELL))
+      .then(async (cache) => {
+        await cache.addAll(APP_SHELL);
+        // Best-effort: don't let a flaky CDN block install of the core app shell
+        await Promise.all(
+          OPTIONAL_SHELL.map((url) =>
+            cache.add(url).catch((err) => console.warn("Optional asset not cached:", url, err))
+          )
+        );
+      })
       .then(() => self.skipWaiting())
   );
 });

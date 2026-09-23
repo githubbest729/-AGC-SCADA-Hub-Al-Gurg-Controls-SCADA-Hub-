@@ -10,6 +10,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
 <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
 <link rel="stylesheet" href="style.css" />
+<!-- html2pdf.js: used client-side only to render the Requirements Specification PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js" defer></script>
 </head>
 <body>
 
@@ -63,7 +65,10 @@
   <section class="tab-panel" id="panel-requirements">
     <div class="panel-header-row">
       <h2 class="panel-title">Requirements &amp; Stakeholder Matrix</h2>
-      <button class="btn btn-primary" id="add-requirement-btn">+ New Requirement</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="generate-req-pdf-btn">📄 Generate PDF</button>
+        <button class="btn btn-primary" id="add-requirement-btn">+ New Requirement</button>
+      </div>
     </div>
 
     <div class="filter-row">
@@ -101,8 +106,9 @@
   <section class="tab-panel" id="panel-estimation">
     <div class="panel-header-row">
       <h2 class="panel-title">Cost Estimation Engine</h2>
-      <div>
+      <div class="btn-row">
         <button class="btn btn-ghost" id="new-estimate-btn">+ New Costing Sheet</button>
+        <button class="btn btn-ghost" id="export-csv-btn">⬇ Download CSV</button>
         <button class="btn btn-primary" id="print-estimate-btn">Print / PDF</button>
       </div>
     </div>
@@ -142,6 +148,7 @@
             <thead>
               <tr>
                 <th>Category</th>
+                <th>Catalog Item</th>
                 <th>Description</th>
                 <th>Qty</th>
                 <th>Unit</th>
@@ -155,6 +162,9 @@
         </div>
 
         <div class="eng-hours-row">
+          <label>Engineering Role (auto-fills hourly rate from catalog)
+            <select id="est-role"></select>
+          </label>
           <label>Engineering Hours (Design/Programming/FAT/SAT)
             <input type="number" id="est-eng-hours" value="0" min="0" step="1" />
           </label>
@@ -181,9 +191,14 @@
   <section class="tab-panel" id="panel-execution">
     <div class="panel-header-row">
       <h2 class="panel-title">Execution Board</h2>
-      <button class="btn btn-primary" id="add-task-btn">+ New Task</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="webhook-settings-btn">🔗 Webhook Settings</button>
+        <button class="btn btn-ghost" id="sync-clickup-btn">☁ Sync to ClickUp</button>
+        <button class="btn btn-ghost" id="sync-n8n-btn">⚡ Sync to n8n</button>
+        <button class="btn btn-primary" id="add-task-btn">+ New Task</button>
+      </div>
     </div>
-    <p class="hint-text">Drag cards between phases, or use the arrows on mobile. Assign owners across Design, Programming, FAT, Commissioning &amp; SAT teams.</p>
+    <p class="hint-text">Drag cards between phases, or use the arrows on mobile. Assign owners across Design, Programming, FAT, Commissioning &amp; SAT teams. Use Sync to push board updates to ClickUp or trigger an n8n automation.</p>
     <div class="kanban-board" id="kanban-board"></div>
   </section>
 
@@ -206,6 +221,9 @@
   </div>
 </div>
 
+<script src="scripts/export.js"></script>
+<script src="scripts/pdf-generator.js"></script>
+<script src="scripts/api.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

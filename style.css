@@ -144,6 +144,7 @@ p { margin: 0; }
   flex-wrap: wrap; gap: 10px; margin-bottom: 14px;
 }
 .hint-text { color: var(--slate-400); font-size: 0.8rem; margin-bottom: 14px; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
 /* ---- Cards ---- */
 .card {
