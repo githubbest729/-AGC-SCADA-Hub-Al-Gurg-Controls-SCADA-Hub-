@@ -376,11 +376,13 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .io-badge-internal { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
 
 @media print {
+  /* Hide unnecessary UI elements, navigation, buttons, and tables */
   .app-header, 
   .tab-bar, 
   .app-footer, 
   .offline-banner, 
   .panel-header-row button, 
+  .card:has([data-template]), 
   #estimates-table, 
   .card:has(#estimates-tbody),
   #save-estimate-btn,
@@ -388,21 +390,44 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
     display: none !important; 
   }
   
+  /* Force clean white background and black text */
   body { 
     background: white !important; 
     color: black !important; 
+    font-size: 11pt;
   }
   
-  .card { 
-    border: 1px solid #ccc !important; 
-    box-shadow: none !important; 
-    background: white !important;
+  /* Reset container layout for single-page print */
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
+  .tab-panel {
+    display: block !important;
+  }
+
+  .est-layout {
+    display: grid !important;
+    grid-template-columns: 1fr 1.5fr !important;
+    gap: 15px !important;
+  }
+
+  .card { 
+    border: 1px solid #ddd !important; 
+    box-shadow: none !important; 
+    background: white !important;
+    padding: 12px !important;
+    margin-bottom: 10px !important;
+    page-break-inside: avoid;
+  }
+
+  /* Make inputs look like static quotation text */
   input, select {
     border: none !important;
     background: transparent !important;
     color: black !important;
     font-weight: 600;
+    padding: 0 !important;
   }
 }
