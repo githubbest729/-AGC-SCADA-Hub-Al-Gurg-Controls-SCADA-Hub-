@@ -637,9 +637,9 @@ function renderBoqTable() {
         </td>
         <td><input type="text" class="boq-input" data-field="description" data-id="${item.id}" value="${escapeAttr(item.description)}" placeholder="Description"/></td>
         <td><input type="number" class="boq-input" data-field="qty" data-id="${item.id}" value="${item.qty}" min="0" step="1"/></td>
-        <td>
-          <select data-field="unit" data-id="${item.id}">
-            ${units.map(u => `<option ${item.unit === u ? "selected" : ""}>${u}</option>`).join("")}
+       <td>
+          <select data-field="unit" data-id="${item.id}" style="width: 100%; min-width: 75px;">
+            ${units.map(u => `<option value="${u}" ${item.unit === u ? "selected" : ""}>${u}</option>`).join("")}
           </select>
         </td>
         <td><input type="number" class="boq-input" data-field="unitCost" data-id="${item.id}" value="${item.unitCost}" min="0" step="0.01"/></td>
