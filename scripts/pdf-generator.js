@@ -23,9 +23,9 @@ window.AGC.PDF = (() => {
     const boqRows = (estimateData.boq || []).map((item, index) => `
       <tr>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">${index + 1}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${item.category || "—"}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${item.catalogSku ? `<strong>${item.catalogSku}</strong><br>` : ""}${item.description || "—"}</td>
-        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">${item.qty} ${item.unit || "pcs"}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${escapeHtml(item.category || "—")}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0;">${item.catalogSku ? `<strong>${escapeHtml(item.catalogSku)}</strong><br>` : ""}${escapeHtml(item.description || "—")}</td>
+        <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: center;">${item.qty} ${escapeHtml(item.unit || "pcs")}</td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">${item.unitCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
         <td style="padding: 8px; border-bottom: 1px solid #e2e8f0; text-align: right;">${(item.qty * item.unitCost).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
       </tr>
@@ -53,7 +53,7 @@ window.AGC.PDF = (() => {
       `;
     }).join("");
 
-    // Create container HTML for PDF export
+    // Create container element for PDF export
     const container = document.createElement("div");
     container.style.padding = "30px";
     container.style.fontFamily = "Arial, sans-serif";
@@ -79,15 +79,11 @@ window.AGC.PDF = (() => {
       </div>
 
       <!-- Project Metadata -->
-      <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-        <div>
-          <p style="margin: 0 0 4px 0;"><strong>Project Name:</strong> ${escapeHtml(estimateData.name || "Untitled Project")}</p>
-          <p style="margin: 0;"><strong>Client / End User:</strong> ${escapeHtml(estimateData.client || "—")}</p>
-        </div>
-        <div>
-          <p style="margin: 0 0 4px 0;"><strong>Currency:</strong> ${currency}</p>
-          <p style="margin: 0;"><strong>Validity:</strong> 30 Days from Date of Issue</p>
-        </div>
+      <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+        <p style="margin: 0 0 4px 0;"><strong>Project Name:</strong> ${escapeHtml(estimateData.name || "Untitled Project")}</p>
+        <p style="margin: 0 0 4px 0;"><strong>Client / End User:</strong> ${escapeHtml(estimateData.client || "—")}</p>
+        <p style="margin: 0 0 4px 0;"><strong>Currency:</strong> ${currency}</p>
+        <p style="margin: 0;"><strong>Validity:</strong> 30 Days from Date of Issue</p>
       </div>
 
       <!-- Bill of Quantities Table -->
@@ -161,6 +157,9 @@ window.AGC.PDF = (() => {
       </div>
     `;
 
+    // Append temporarily to DOM so html2pdf can read it, then remove it cleanly
+    document.body.appendChild(container);
+
     const opt = {
       margin:       10,
       filename:     `AGC-Quotation-${(estimateData.name || "Project").replace(/\s+/g, '_')}.pdf`,
@@ -169,7 +168,11 @@ window.AGC.PDF = (() => {
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    html2pdf().from(container).set(opt).save();
+    html2pdf().from(container).set(opt).save().then(() => {
+      document.body.removeChild(container);
+    }).catch(() => {
+      if (document.body.contains(container)) document.body.removeChild(container);
+    });
   }
 
   function escapeHtml(str) {
