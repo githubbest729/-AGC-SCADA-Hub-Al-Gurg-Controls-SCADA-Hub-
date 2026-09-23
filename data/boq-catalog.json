@@ -1,0 +1,123 @@
+{
+  "catalogVersion": "1.0.0",
+  "currency": "AED",
+  "lastUpdated": "2026-09-01",
+  "notes": "Standardized Al Gurg Automation & Controls budgetary pricing for estimation purposes. Confirm against latest vendor price lists before issuing a firm client quotation.",
+
+  "categories": [
+    {
+      "id": "plc",
+      "label": "PLC",
+      "unit": "pcs",
+      "items": [
+        { "sku": "S7-1200-CPU1214C", "vendor": "Siemens", "description": "SIMATIC S7-1200, CPU 1214C, 14 DI/10 DO/2 AI", "unitCost": 2450 },
+        { "sku": "S7-1500-CPU1511-1PN", "vendor": "Siemens", "description": "SIMATIC S7-1500, CPU 1511-1 PN", "unitCost": 6800 },
+        { "sku": "S7-1500-CPU1516-3PN", "vendor": "Siemens", "description": "SIMATIC S7-1500, CPU 1516-3 PN/DP, redundancy-ready", "unitCost": 14200 },
+        { "sku": "ET200SP-CPU1510SP", "vendor": "Siemens", "description": "SIMATIC ET 200SP, CPU 1510SP-1 PN distributed controller", "unitCost": 5100 },
+        { "sku": "CLX-L83E-1756", "vendor": "Allen-Bradley", "description": "ControlLogix 5580, 1756-L83E processor", "unitCost": 15600 },
+        { "sku": "CLX-L71-1756", "vendor": "Allen-Bradley", "description": "ControlLogix 5570, 1756-L71 processor", "unitCost": 11400 },
+        { "sku": "CPX-L24ER-QBFC1B", "vendor": "Allen-Bradley", "description": "CompactLogix 5380, 1769-L24ER-QBFC1B", "unitCost": 4950 },
+        { "sku": "MICRO850-2080-LC50", "vendor": "Allen-Bradley", "description": "Micro850, 2080-LC50-24QWB controller", "unitCost": 1850 }
+      ]
+    },
+    {
+      "id": "io_module",
+      "label": "I/O Module",
+      "unit": "pcs",
+      "items": [
+        { "sku": "SM1221-DI16", "vendor": "Siemens", "description": "SM 1221 Digital Input module, 16 x DC24V", "unitCost": 480 },
+        { "sku": "SM1222-DO16", "vendor": "Siemens", "description": "SM 1222 Digital Output module, 16 x relay", "unitCost": 620 },
+        { "sku": "SM1231-AI8", "vendor": "Siemens", "description": "SM 1231 Analog Input module, 8 x AI (RTD/TC)", "unitCost": 1050 },
+        { "sku": "SM1232-AO4", "vendor": "Siemens", "description": "SM 1232 Analog Output module, 4 x AO", "unitCost": 890 },
+        { "sku": "ET200SP-DI16", "vendor": "Siemens", "description": "ET 200SP Digital Input module, 16 x DC24V, HF", "unitCost": 520 },
+        { "sku": "1756-IB16", "vendor": "Allen-Bradley", "description": "ControlLogix Digital Input module, 16 x DC24V", "unitCost": 690 },
+        { "sku": "1756-OB16", "vendor": "Allen-Bradley", "description": "ControlLogix Digital Output module, 16 x DC24V", "unitCost": 740 },
+        { "sku": "1756-IF8", "vendor": "Allen-Bradley", "description": "ControlLogix Analog Input module, 8 x AI", "unitCost": 1620 },
+        { "sku": "1756-OF8", "vendor": "Allen-Bradley", "description": "ControlLogix Analog Output module, 8 x AO", "unitCost": 1780 },
+        { "sku": "1769-IQ16", "vendor": "Allen-Bradley", "description": "CompactLogix Digital Input module, 16 x DC24V", "unitCost": 410 }
+      ]
+    },
+    {
+      "id": "scada_tags",
+      "label": "SCADA Tags",
+      "unit": "tags",
+      "items": [
+        { "sku": "WINCC-RT-128", "vendor": "Siemens", "description": "WinCC RT Professional, 128 PowerTags license tier", "unitCost": 45 },
+        { "sku": "WINCC-RT-512", "vendor": "Siemens", "description": "WinCC RT Professional, 512 PowerTags license tier", "unitCost": 38 },
+        { "sku": "WINCC-RT-2048", "vendor": "Siemens", "description": "WinCC RT Professional, 2048 PowerTags license tier", "unitCost": 29 },
+        { "sku": "FTVIEW-SE-500", "vendor": "Rockwell", "description": "FactoryTalk View SE, 500 tag license tier", "unitCost": 42 },
+        { "sku": "FTVIEW-SE-5000", "vendor": "Rockwell", "description": "FactoryTalk View SE, 5000 tag license tier", "unitCost": 27 },
+        { "sku": "IGNITION-UNLIMITED", "vendor": "Inductive Automation", "description": "Ignition SCADA, unlimited tag license (per server)", "unitCost": 18 }
+      ]
+    },
+    {
+      "id": "network_switch",
+      "label": "Network Switch",
+      "unit": "pcs",
+      "items": [
+        { "sku": "SCALANCE-XC208", "vendor": "Siemens", "description": "SCALANCE XC208, 8-port industrial managed switch", "unitCost": 1450 },
+        { "sku": "SCALANCE-XC216", "vendor": "Siemens", "description": "SCALANCE XC216, 16-port industrial managed switch", "unitCost": 2680 },
+        { "sku": "SCALANCE-XM416", "vendor": "Siemens", "description": "SCALANCE XM416-4C, 16-port Layer 3 managed switch", "unitCost": 5950 },
+        { "sku": "STRATIX-2500-8P", "vendor": "Allen-Bradley", "description": "Stratix 2500, 8-port unmanaged industrial switch", "unitCost": 980 },
+        { "sku": "STRATIX-5700-16P", "vendor": "Allen-Bradley", "description": "Stratix 5700, 16-port managed industrial switch", "unitCost": 3200 }
+      ]
+    },
+    {
+      "id": "hmi_panel",
+      "label": "HMI Panel",
+      "unit": "pcs",
+      "items": [
+        { "sku": "KTP700-BASIC", "vendor": "Siemens", "description": "SIMATIC KTP700 Basic, 7\" touch panel", "unitCost": 1650 },
+        { "sku": "TP1200-COMFORT", "vendor": "Siemens", "description": "SIMATIC TP1200 Comfort, 12\" touch panel", "unitCost": 4200 },
+        { "sku": "TP1500-COMFORT", "vendor": "Siemens", "description": "SIMATIC TP1500 Comfort, 15\" touch panel", "unitCost": 5850 },
+        { "sku": "PANELVIEW-800-7IN", "vendor": "Allen-Bradley", "description": "PanelView 800, 7\" color touch terminal", "unitCost": 2100 },
+        { "sku": "PANELVIEW-5510-12IN", "vendor": "Allen-Bradley", "description": "PanelView 5510, 12\" widescreen terminal", "unitCost": 7400 }
+      ]
+    },
+    {
+      "id": "server_workstation",
+      "label": "Server/Workstation",
+      "unit": "pcs",
+      "items": [
+        { "sku": "SCADA-SRV-STD", "vendor": "Al Gurg Std. Build", "description": "Industrial rack-mount SCADA server, redundant PSU", "unitCost": 12500 },
+        { "sku": "ENG-WORKSTATION", "vendor": "Al Gurg Std. Build", "description": "Engineering workstation, i7, 32GB RAM, dual monitor ready", "unitCost": 6200 },
+        { "sku": "HISTORIAN-SRV", "vendor": "Al Gurg Std. Build", "description": "Data historian server, 4TB RAID storage", "unitCost": 15800 }
+      ]
+    },
+    {
+      "id": "cabling",
+      "label": "Cabling",
+      "unit": "m",
+      "items": [
+        { "sku": "CAT6-INDUSTRIAL", "vendor": "Generic", "description": "Industrial-grade shielded Cat6 Ethernet cable", "unitCost": 9.5 },
+        { "sku": "PROFIBUS-CABLE", "vendor": "Siemens", "description": "PROFIBUS DP purple cable, shielded twisted pair", "unitCost": 12 },
+        { "sku": "FIBER-OM3-DUPLEX", "vendor": "Generic", "description": "OM3 multimode duplex fiber optic cable", "unitCost": 18 },
+        { "sku": "INSTRUMENT-CABLE-2C", "vendor": "Generic", "description": "2-core screened instrumentation cable, 1.5mm\u00b2", "unitCost": 7.2 }
+      ]
+    },
+    {
+      "id": "software_license",
+      "label": "Software License",
+      "unit": "lot",
+      "items": [
+        { "sku": "TIA-PORTAL-PRO", "vendor": "Siemens", "description": "TIA Portal Professional, per-seat engineering license", "unitCost": 8500 },
+        { "sku": "STUDIO5000-PRO", "vendor": "Rockwell", "description": "Studio 5000 Professional, per-seat engineering license", "unitCost": 9200 },
+        { "sku": "WINCC-UA-RT", "vendor": "Siemens", "description": "WinCC Unified PC Runtime license", "unitCost": 11500 },
+        { "sku": "FTLINX-GATEWAY", "vendor": "Rockwell", "description": "FactoryTalk Linx Gateway license", "unitCost": 3400 }
+      ]
+    }
+  ],
+
+  "engineeringRates": {
+    "currency": "AED",
+    "rates": [
+      { "role": "Junior SCADA Engineer", "hourlyRate": 90 },
+      { "role": "SCADA Engineer", "hourlyRate": 150 },
+      { "role": "Senior SCADA / Control Systems Engineer", "hourlyRate": 220 },
+      { "role": "Project Engineer", "hourlyRate": 180 },
+      { "role": "Commissioning Engineer", "hourlyRate": 200 },
+      { "role": "Panel Design Draftsman", "hourlyRate": 110 }
+    ],
+    "defaultRate": 150
+  }
+}
