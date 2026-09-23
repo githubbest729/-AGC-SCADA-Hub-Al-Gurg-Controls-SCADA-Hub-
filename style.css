@@ -289,6 +289,13 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 }
 .data-table td { padding: 10px; border-bottom: 1px solid var(--slate-800); vertical-align: middle; }
 .data-table tr:hover td { background: rgba(56,189,248,0.04); }
+
+/* --- FIX TRUNCATED TEXT IN TABLE SELECT DROPDOWNS --- */
+.data-table select {
+  max-width: 250px;
+  text-overflow: ellipsis;
+}
+
 .empty-state { color: var(--slate-400); font-size: 0.85rem; padding: 16px 0; text-align: center; }
 
 /* ---- Badges ---- */
