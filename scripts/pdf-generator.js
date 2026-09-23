@@ -55,9 +55,14 @@ window.AGC.PDF = (() => {
       `;
     }).join("");
 
-    // Create container element for PDF export
+    // Create container element and explicitly attach to DOM to avoid missing source errors
     const container = document.createElement("div");
-    container.style.padding = "25px";
+    container.id = "agc-pdf-export-container";
+    container.style.position = "absolute";
+    container.style.left = "-9999px";
+    container.style.top = "0";
+    container.style.width = "794px"; // Standard A4 width in px at 96 DPI
+    container.style.padding = "30px";
     container.style.fontFamily = "Arial, sans-serif";
     container.style.color = "#1e293b";
     container.style.background = "#ffffff";
@@ -194,17 +199,18 @@ window.AGC.PDF = (() => {
       </div>
     `;
 
+    // Ensure the container is fully mounted in the DOM before html2pdf reads it
     document.body.appendChild(container);
 
     const opt = {
       margin:       8,
       filename:     filename,
       image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2, useCORS: true },
+      html2canvas:  { scale: 2, useCORS: true, logging: false },
       jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Force reliable anchor click download on static hosting (GitHub Pages)
+    // Generate blob and trigger forced download via anchor element
     html2pdf().from(container).set(opt).outputPdf('blob').then((pdfBlob) => {
       const blobUrl = URL.createObjectURL(pdfBlob);
       const downloadLink = document.createElement("a");
@@ -215,10 +221,14 @@ window.AGC.PDF = (() => {
       document.body.removeChild(downloadLink);
       URL.revokeObjectURL(blobUrl);
     }).then(() => {
-      if (document.body.contains(container)) document.body.removeChild(container);
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
     }).catch((err) => {
       console.error("PDF generation failed:", err);
-      if (document.body.contains(container)) document.body.removeChild(container);
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
     });
   }
 
