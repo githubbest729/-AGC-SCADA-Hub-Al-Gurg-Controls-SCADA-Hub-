@@ -28,10 +28,10 @@
   <!-- Geo Positioning Meta Tags -->
   <meta name="geo.region" content="AE-DU" />
   <meta name="geo.placename" content="Dubai" />
-  <meta name="geo.position" content="25.2680;55.3350" />
-  <meta name="ICBM" content="25.2680, 55.3350" />
+  <meta name="geo.position" content="24.9857;55.1206" />
+  <meta name="ICBM" content="24.9857, 55.1206" />
 
-  <!-- Google Local Business Schema -->
+  <!-- Google Local Business Schema (Updated to Jebel Ali HQ) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -43,18 +43,27 @@
     "telephone": "",
     "address": {
       "@type": "PostalAddress",
-      "streetAddress": "Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira",
+      "streetAddress": "Jebel Ali Industrial Area, PO Box 325",
       "addressLocality": "Dubai",
-      "postalCode": "25490",
       "addressCountry": "AE"
     },
     "geo": {
       "@type": "GeoCoordinates",
-      "latitude": 25.2680,
-      "longitude": 55.3350
+      "latitude": 24.9857,
+      "longitude": 55.1206
     }
   }
   </script>
+
+  <!-- ===================== SCRIPTS (DEFERRED FOR PERFORMANCE) ===================== -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
+  <script src="scripts/db.js" defer></script>
+  <script src="scripts/export.js" defer></script>
+  <script src="scripts/pdf-generator.js" defer></script>
+  <script src="scripts/api.js" defer></script>
+  <script src="scripts/punchlist.js" defer></script>
+  <script src="scripts/io-tags.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 
 <body>
@@ -73,7 +82,7 @@
     <div class="header-actions">
       <span id="sync-status" class="sync-status">● Saved locally</span>
       <button id="export-btn" class="btn btn-ghost" title="Export all data as JSON">Export</button>
-      <button id="settings-btn" class="btn btn-ghost" title="Settings">⚙</button>
+      <button id="settings-btn" class="btn btn-ghost" title="Settings" aria-label="Open Settings">⚙</button>
     </div>
   </header>
 
@@ -388,6 +397,8 @@
           <h2 class="panel-title">Cross-Functional Site Punchlist</h2>
         </div>
         <div class="btn-row">
+          <!-- THE MISSING EXPORT BUTTON IS NOW HERE -->
+          <button class="btn btn-ghost" id="export-punchlist-btn">⬇ Export CSV</button>
           <button class="btn btn-primary" id="add-punchlist-btn">+ Log Site Snag</button>
         </div>
       </div>
@@ -398,7 +409,7 @@
   </main>
 
   <footer class="app-footer">
-    <p><strong>Al Gurg Automation and Controls</strong> — Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE</p>
+    <p><strong>Al Gurg Automation and Controls</strong> — Jebel Ali Industrial Area, PO Box 325, Dubai, United Arab Emirates</p>
     <p class="footer-sub">AGC SCADA Hub v1.0 · Works offline · Data stored locally on this device</p>
   </footer>
 
@@ -407,27 +418,13 @@
     <div class="modal" id="modal-box">
       <div class="modal-header">
         <h3 id="modal-title">Title</h3>
-        <button class="modal-close" id="modal-close">✕</button>
+        <!-- Added aria-label for accessibility -->
+        <button class="modal-close" id="modal-close" aria-label="Close modal">✕</button>
       </div>
       <div class="modal-body" id="modal-body"></div>
       <div class="modal-footer" id="modal-footer"></div>
     </div>
   </div>
-
-  <!-- ===================== SCRIPTS (ORDER IS IMPORTANT) ===================== -->
-  <!-- 1. html2pdf library first -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
-  <!-- 2. Your modules -->
-  <script src="scripts/db.js"></script>
-  <script src="scripts/export.js"></script>
-  <script src="scripts/pdf-generator.js"></script>
-  <script src="scripts/api.js"></script>
-  <script src="scripts/punchlist.js"></script>
-  <script src="scripts/io-tags.js"></script>
-
-  <!-- 3. Main application last -->
-  <script src="app.js"></script>
 
 </body>
 </html>
