@@ -15,6 +15,17 @@ window.AGC.PDF = (() => {
     );
   }
 
+  // Enterprise/ERP-style currency formatting: ALWAYS exactly 2 decimal
+  // places (never 1, never 3). toLocaleString() alone can render 3
+  // decimals for values like 29030.485 unless maximumFractionDigits is
+  // pinned alongside minimumFractionDigits, so both are set explicitly here.
+  function formatCurrency(value) {
+    return Number(value || 0).toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  }
+
   function generateCostEstimationPdf(estimateData, totals) {
     if (!window.html2pdf) {
       alert("PDF library is still loading. Please wait 2 seconds and try again.");
@@ -38,17 +49,18 @@ window.AGC.PDF = (() => {
     // Build BOQ rows
     const boqRows = (estimateData.boq || []).map((item, index) => {
       const lineTotal = (item.qty || 0) * (item.unitCost || 0);
+      const rowBg = index % 2 === 0 ? "#ffffff" : "#f8fafc";
       return `
-        <tr>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;">${index + 1}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;">${escapeHtml(item.category || "—")}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;">
+        <tr style="background:${rowBg};">
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">${index + 1}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;">${escapeHtml(item.category || "—")}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;">
             ${item.catalogSku ? `<strong>${escapeHtml(item.catalogSku)}</strong><br>` : ""}
             ${escapeHtml(item.description || "—")}
           </td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;">${item.qty || 0} ${escapeHtml(item.unit || "pcs")}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${Number(item.unitCost || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${lineTotal.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;">${item.qty || 0} ${escapeHtml(item.unit || "pcs")}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(item.unitCost)}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(lineTotal)}</td>
         </tr>`;
     }).join("") || `
       <tr>
@@ -67,14 +79,15 @@ window.AGC.PDF = (() => {
       { name: "Site Supervision",        hrs: p.supervision?.hours || 0, rate: p.supervision?.rate || 350 }
     ];
 
-    const engRows = phasesList.map(phase => {
+    const engRows = phasesList.map((phase, index) => {
       const lineTotal = phase.hrs * phase.rate;
+      const rowBg = index % 2 === 0 ? "#ffffff" : "#f8fafc";
       return `
-        <tr>
-          <td style="padding:6px;border:1px solid #cbd5e1;">${phase.name}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:center;">${phase.hrs} hrs</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${phase.rate.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
-          <td style="padding:6px;border:1px solid #cbd5e1;text-align:right;">${lineTotal.toLocaleString(undefined, {minimumFractionDigits:2})}</td>
+        <tr style="background:${rowBg};">
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;">${phase.name}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:center;">${phase.hrs} hrs</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;">${formatCurrency(phase.rate)}</td>
+          <td style="padding:8px 7px;border:1px solid #cbd5e1;text-align:right;font-weight:600;">${formatCurrency(lineTotal)}</td>
         </tr>`;
     }).join("");
 
@@ -127,13 +140,13 @@ window.AGC.PDF = (() => {
         <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">1. Bill of Quantities (Hardware &amp; Software Materials)</h3>
         <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
           <thead>
-            <tr style="background:#f1f5f9;color:#334155;">
-              <th style="padding:5px 7px;border:1px solid #cbd5e1;width:30px;text-align:center;">#</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:90px;">Category</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;">Description / SKU</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:70px;text-align:center;">Qty</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:90px;text-align:right;">Unit (${currency})</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:100px;text-align:right;">Total (${currency})</th>
+            <tr style="background:#0f172a;color:#ffffff;">
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:30px;text-align:center;font-weight:600;">#</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:90px;font-weight:600;">Category</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;font-weight:600;">Description / SKU</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:70px;text-align:center;font-weight:600;">Qty</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:90px;text-align:right;font-weight:600;">Unit (${currency})</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:100px;text-align:right;font-weight:600;">Total (${currency})</th>
             </tr>
           </thead>
           <tbody>${boqRows}</tbody>
@@ -143,11 +156,11 @@ window.AGC.PDF = (() => {
         <h3 style="font-size:11pt;color:#0f172a;border-bottom:1px solid #cbd5e1;padding-bottom:4px;margin:0 0 8px;">2. Engineering &amp; Site Services Breakdown</h3>
         <table style="width:100%;border-collapse:collapse;margin-bottom:12px;font-size:9pt;">
           <thead>
-            <tr style="background:#f1f5f9;color:#334155;">
-              <th style="padding:5px 7px;border:1px solid #cbd5e1;">Engineering Phase</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:95px;text-align:center;">Duration</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:100px;text-align:right;">Rate (${currency}/hr)</th>
-              <th style="padding:7px;border:1px solid #cbd5e1;width:105px;text-align:right;">Total (${currency})</th>
+            <tr style="background:#0f172a;color:#ffffff;">
+              <th style="padding:8px 7px;border:1px solid #0f172a;font-weight:600;">Engineering Phase</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:95px;text-align:center;font-weight:600;">Duration</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:100px;text-align:right;font-weight:600;">Rate (${currency}/hr)</th>
+              <th style="padding:8px 7px;border:1px solid #0f172a;width:105px;text-align:right;font-weight:600;">Total (${currency})</th>
             </tr>
           </thead>
           <tbody>${engRows}</tbody>
@@ -164,27 +177,27 @@ window.AGC.PDF = (() => {
           <div style="width:48%;background:#f8fafc;border:1px solid #cbd5e1;padding:12px;border-radius:6px;font-size:9.5pt;">
             <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
               <span>Materials Subtotal:</span>
-              <strong>${currency} ${Number(totals.boqTotal || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
+              <strong>${currency} ${formatCurrency(totals.boqTotal)}</strong>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
               <span>Engineering Subtotal (${totals.totalHours || 0} hrs):</span>
-              <strong>${currency} ${Number(totals.engCost || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
+              <strong>${currency} ${formatCurrency(totals.engCost)}</strong>
             </div>
             <div style="display:flex;justify-content:space-between;border-top:1px solid #cbd5e1;padding-top:5px;margin-bottom:5px;">
               <span>Combined Subtotal:</span>
-              <strong>${currency} ${Number(totals.subtotal || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
+              <strong>${currency} ${formatCurrency(totals.subtotal)}</strong>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:5px;color:#475569;">
               <span>Contingency (${estimateData.contingency || 10}%):</span>
-              <span>${currency} ${Number(totals.contingencyAmt || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <span>${currency} ${formatCurrency(totals.contingencyAmt)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;margin-bottom:8px;color:#475569;">
               <span>Net Profit Margin (${estimateData.margin || 15}%):</span>
-              <span>${currency} ${Number(totals.marginAmt || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</span>
+              <span>${currency} ${formatCurrency(totals.marginAmt)}</span>
             </div>
             <div style="display:flex;justify-content:space-between;border-top:2px solid #0f172a;padding-top:8px;font-size:12pt;color:#0f172a;">
               <strong>Grand Total:</strong>
-              <strong>${currency} ${Number(totals.grandTotal || 0).toLocaleString(undefined, {minimumFractionDigits:2})}</strong>
+              <strong>${currency} ${formatCurrency(totals.grandTotal)}</strong>
             </div>
           </div>
         </div>
