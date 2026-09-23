@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Enterprise Initialization ---
   async function initPunchlist() {
-    if (!window.DB) {
+    if (typeof DB === "undefined") {
       console.error("Critical: Database module not loaded.");
       return;
     }
