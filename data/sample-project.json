@@ -1,0 +1,75 @@
+{
+  "projectInfo": {
+    "id": "proj-wtp-alain-01",
+    "name": "Al Ain WTP SCADA Upgrade",
+    "client": "Al Ain Distribution Company (AADC)",
+    "location": "Al Ain, UAE",
+    "currency": "AED",
+    "status": "Active execution"
+  },
+  "requirements": [
+    {
+      "id": "req-001",
+      "projectId": "proj-wtp-alain-01",
+      "title": "Redundant PLC Architecture",
+      "description": "Hot-standby PLC configuration using Siemens S7-1500H to ensure zero downtime on main lift pumps.",
+      "stakeholder": "AADC Lead Engineer",
+      "role": "Client",
+      "priority": "High",
+      "status": "Delivered",
+      "dueDate": "2026-10-15"
+    },
+    {
+      "id": "req-002",
+      "projectId": "proj-wtp-alain-01",
+      "title": "DNP3 Telemetry Integration",
+      "description": "Establish DNP3 communication to the central ADDC control room via secure VPN router.",
+      "stakeholder": "IT / OT Security",
+      "role": "Internal",
+      "priority": "High",
+      "status": "In Progress",
+      "dueDate": "2026-11-01"
+    }
+  ],
+  "kanban": [
+    {
+      "id": "task-101",
+      "phase": "Design",
+      "title": "Approve I/O List",
+      "owner": "Control System Engineer",
+      "status": "Done"
+    },
+    {
+      "id": "task-102",
+      "phase": "Programming",
+      "title": "Develop Lift Station Faceplates",
+      "owner": "SCADA Engineer",
+      "status": "In Progress"
+    },
+    {
+      "id": "task-103",
+      "phase": "FAT",
+      "title": "Panel Loop Checks",
+      "owner": "Instrumentation Tech",
+      "status": "Blocked"
+    }
+  ],
+  "punchlist": [
+    {
+      "id": "snag-001",
+      "title": "Clarifier level transmitter scaling incorrect",
+      "discipline": "Instrumentation",
+      "notes": "Field sensor sends 4-20mA for 0-10m, but PLC logic is scaled for 0-5m. Needs logic update.",
+      "status": "Open",
+      "date": "2026-09-22"
+    },
+    {
+      "id": "snag-002",
+      "title": "OT Network Switch IP Conflict",
+      "discipline": "IT/Network",
+      "notes": "Main Stratix switch IP conflicts with local contractor subnet. IT needs to assign new static IP range.",
+      "status": "In Progress",
+      "date": "2026-09-23"
+    }
+  ]
+}
