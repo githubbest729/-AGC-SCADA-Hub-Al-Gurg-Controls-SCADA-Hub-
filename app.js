@@ -603,7 +603,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  function renderBoqTable() {
+function renderBoqTable() {
     if (!boqTbody) return;
     const boq = DATA.currentEstimate.boq;
     const categories = getCategoryLabels();
@@ -612,6 +612,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     boq.forEach(item => {
       const catalogItems = getCatalogItemsForCategory(item.category);
       const units = getUnitsForCategory(item.category);
+
+      // --- SAFETY FIX: Ensure unit always has a valid fallback ---
+      if (!item.unit || !units.includes(item.unit)) {
+        item.unit = units[0] || "pcs";
+      }
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>
@@ -642,7 +648,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
       boqTbody.appendChild(tr);
     });
-
+   
     boqTbody.querySelectorAll("[data-field='catalogSku']").forEach(el =>
       el.addEventListener("change", handleBoqCatalogSelect)
     );
