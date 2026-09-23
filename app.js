@@ -2,7 +2,7 @@
    AGC SCADA Hub — app.js
    Enterprise Vanilla JS SPA logic (IndexedDB & Multi-Phase Costing)
    Tabs, requirements matrix, cost estimation engine, 
-   execution kanban board, offline handling.
+   execution kanban board, offline handling & custom catalog engine.
    ========================================================= */
 document.addEventListener("DOMContentLoaded", async () => {
   "use strict";
@@ -124,7 +124,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* ---------------- Utilities ---------------- */
   function fmtMoney(n, currency) {
     const val = isFinite(n) ? n : 0;
-    // Uses strict 2-decimal formatting globally for the UI
     return `${currency || DATA.currentEstimate.currency} ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   }
 
@@ -158,6 +157,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   function updateOnlineStatus() {
     const online = navigator.onLine;
     offlineBanner.classList.toggle("hidden", online);
+    
+    // Flush background sync queue the moment connectivity returns
+    if (online && window.AGC && window.AGC.Api && typeof window.AGC.Api.processSyncQueue === "function") {
+      window.AGC.Api.processSyncQueue();
+    }
   }
   window.addEventListener("online", updateOnlineStatus);
   window.addEventListener("offline", updateOnlineStatus);
@@ -482,7 +486,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("print-estimate-btn").addEventListener("click", () => {
     syncEstimateFromForm();
     const e = DATA.currentEstimate;
-    const t = calcTotals(e); // This now includes VAT and markupFactor
+    const t = calcTotals(e); 
 
     if (!e.boq.length && t.totalHours === 0) {
       alert("Please add BOQ line items or engineering hours before generating the quotation PDF.");
@@ -514,9 +518,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
-  // --- REFACTORED ENTERPRISE PRICING MATH ---
+  // --- ENTERPRISE PRICING MATH ---
   function calcTotals(estimate) {
-    // 1. Calculate Raw Base Costs
     const rawBoqTotal = (estimate.boq || []).reduce((sum, item) => sum + (item.qty * item.unitCost), 0);
     const p = estimate.phases || {};
     const rawEngCost =
@@ -535,20 +538,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const rawSubtotal = rawBoqTotal + rawEngCost;
 
-    // 2. Commercial Strategy (Bake contingency & margin into the selling price)
     const contingencyMultiplier = 1 + ((estimate.contingency || 0) / 100);
     const marginDivisor = 1 - ((estimate.margin || 0) / 100);
     const costWithContingency = rawSubtotal * contingencyMultiplier;
     
-    // Total selling price (Internal margins are applied invisibly here)
     const sellingSubtotal = marginDivisor > 0 ? (costWithContingency / marginDivisor) : costWithContingency;
 
-    // 3. Apportion Selling Prices to BOQ and Engineering based on weight
     const markupFactor = rawSubtotal > 0 ? (sellingSubtotal / rawSubtotal) : 1;
     const sellingBoqTotal = rawBoqTotal * markupFactor;
     const sellingEngCost = rawEngCost * markupFactor;
 
-    // 4. VAT Compliance
     const vatAmount = sellingSubtotal * 0.05; // 5% UAE VAT
     const grandTotal = sellingSubtotal + vatAmount;
 
@@ -637,26 +636,33 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderCostSummary();
   }
 
+  // --- UPDATED FOR CUSTOM COMPONENT ENGINE ---
   function handleBoqFieldChange(e) {
     const id = e.target.dataset.id;
     const field = e.target.dataset.field;
     const item = DATA.currentEstimate.boq.find(i => i.id === id);
     if (!item) return;
+
     if (field === "category") {
       item.category = e.target.value;
-      item.catalogSku = "";
-      item.unit = getUnitsForCategory(e.target.value)[0];
+      if (item.category === "Custom / Third-Party Equipment") {
+        item.catalogSku = "CUSTOM-EQUIPMENT";
+        item.unit = "lot";
+      } else {
+        item.catalogSku = "";
+        item.unit = getUnitsForCategory(e.target.value)[0] || "pcs";
+      }
     } else if (field === "qty" || field === "unitCost") {
       item[field] = parseFloat(e.target.value) || 0;
     } else {
       item[field] = e.target.value;
     }
+
     saveDraft();
     renderBoqTable();
     renderCostSummary();
   }
 
-  // Reflecting Internal vs Client-Facing costs
   function renderCostSummary() {
     if (!costSummaryEl) return;
     const e = DATA.currentEstimate;
@@ -951,7 +957,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <p><strong>AGC SCADA Hub</strong> — v1.0 (IndexedDB Engine)</p>
         <p style="margin-top:8px;">Al Gurg Automation and Controls</p>
         <p style="color:var(--slate-400); font-size:0.8rem; margin-top:4px;">
-          Al Ittihad Road (Dubai-Sharjah Road), Al Khabisi Area, Deira, PO Box 25490, Dubai, UAE
+          Jebel Ali Industrial Area, PO Box 325, Dubai, United Arab Emirates
         </p>
         <p style="margin-top:14px; font-size:0.85rem;">
           All data is stored locally on this device (IndexedDB) so the app works fully offline on-site.
@@ -1065,19 +1071,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         reportSyncResult(result, `${DATA.tasks.length} task(s) sent to n8n.`);
       } else {
         let successCount = 0;
+        let queuedCount = 0;
         for (const task of DATA.tasks) {
           const result = await window.AGC.Api.syncTaskToClickUp(task);
-          if (result.ok) successCount++;
+          if (result.ok) {
+            if (result.queued) queuedCount++;
+            else successCount++;
+          }
         }
-        reportSyncResult(
-          {
-            ok: successCount === DATA.tasks.length,
-            error: successCount < DATA.tasks.length
-              ? `${DATA.tasks.length - successCount} task(s) failed.`
-              : null
-          },
-          `${successCount}/${DATA.tasks.length} task(s) synced to ClickUp.`
-        );
+        
+        if (queuedCount > 0) {
+           reportSyncResult({ queued: true });
+        } else {
+           reportSyncResult(
+             {
+               ok: successCount === DATA.tasks.length,
+               error: successCount < DATA.tasks.length
+                 ? `${DATA.tasks.length - successCount} task(s) failed.`
+                 : null
+             },
+             `${successCount}/${DATA.tasks.length} task(s) synced to ClickUp.`
+           );
+        }
       }
     } finally {
       btn.disabled = false;
@@ -1086,8 +1101,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function reportSyncResult(result, successMessage) {
-    if (result.ok) alert(`✅ ${successMessage}`);
-    else alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe locally.`);
+    if (result.queued) {
+      alert(`📡 You are offline or experiencing high latency. The update has been securely queued and will sync automatically when your connection is restored.`);
+    } else if (result.ok) {
+      alert(`✅ ${successMessage}`);
+    } else {
+      alert(`⚠ Sync did not fully complete: ${result.error || "Unknown error."}\n\nYour board data is safe locally.`);
+    }
   }
 
   /* ---------------- Init ---------------- */
