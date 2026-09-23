@@ -3,14 +3,29 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>AGC SCADA Hub</title>
-<meta name="description" content="Al Gurg Controls SCADA Hub - requirements tracking, cost estimation, and execution management for SCADA engineers." />
+
+<!-- UPDATED TITLE to match core job duties -->
+<title>AGC SCADA Hub | Requirements, Estimation & Execution</title>
+<meta name="description" content="Al Gurg Controls SCADA Hub - Requirements tracking, cost estimation, and cross-functional execution management for SCADA engineers." />
 <meta name="theme-color" content="#0f172a" />
+
+<!-- NEW: Open Graph Meta Tags for WhatsApp/Slack Link Previews -->
+<meta property="og:title" content="AGC SCADA Hub | Requirements, Estimation & Execution" />
+<meta property="og:description" content="Project estimation, requirement tracking, and cross-functional site execution for Al Gurg Automation." />
+<meta property="og:image" content="https://YOUR-GITHUB-USERNAME.github.io/agc-scada-hub/icons/og-image.png" />
+<meta property="og:url" content="https://YOUR-GITHUB-USERNAME.github.io/agc-scada-hub/" />
+<meta property="og:type" content="website" />
+
+<!-- NEW: Twitter Card Meta Tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="AGC SCADA Hub | Engineering Workspace" />
+<meta name="twitter:description" content="Project estimation, requirement tracking, and FAT/SAT protocol management." />
+<meta name="twitter:image" content="https://YOUR-GITHUB-USERNAME.github.io/agc-scada-hub/icons/og-image.png" />
+
 <link rel="manifest" href="manifest.json" />
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png" />
 <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
 <link rel="stylesheet" href="style.css" />
-<!-- html2pdf.js: used client-side only to render the Requirements Specification PDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.8.0/html2pdf.bundle.min.js" defer></script>
 </head>
 <body>
@@ -32,11 +47,15 @@
   </div>
 </header>
 
+<!-- UPDATED: Added new tabs to the navigation bar -->
 <nav class="tab-bar" id="tab-bar">
   <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
   <button class="tab-btn" data-tab="requirements">Requirements</button>
+  <button class="tab-btn" data-tab="io-calc">I/O Calculator</button>
   <button class="tab-btn" data-tab="estimation">Cost Estimation</button>
   <button class="tab-btn" data-tab="execution">Execution Board</button>
+  <button class="tab-btn" data-tab="fatsat">FAT/SAT Protocol</button>
+  <button class="tab-btn" data-tab="punchlist">Site Punchlist</button>
 </nav>
 
 <main id="app-main">
@@ -99,6 +118,20 @@
         <tbody id="requirements-tbody"></tbody>
       </table>
       <p class="empty-state hidden" id="requirements-empty">No requirements logged yet. Click "New Requirement" to add one.</p>
+    </div>
+  </section>
+
+  <!-- NEW: I/O CALCULATOR PANEL -->
+  <section class="tab-panel" id="panel-io-calc">
+    <div class="panel-header-row">
+      <h2 class="panel-title">I/O &amp; Tag Tier Calculator</h2>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="calculate-io-btn">Calculate Total Tags</button>
+      </div>
+    </div>
+    <p class="hint-text">Size your SCADA licensing and hardware based on plant I/O count.</p>
+    <div class="card" id="io-calc-container">
+        <!-- Rendered by app.js -->
     </div>
   </section>
 
@@ -202,6 +235,34 @@
     <div class="kanban-board" id="kanban-board"></div>
   </section>
 
+  <!-- NEW: FAT/SAT PROTOCOL PANEL -->
+  <section class="tab-panel" id="panel-fatsat">
+    <div class="panel-header-row">
+      <h2 class="panel-title">FAT / SAT Delivery Protocol</h2>
+      <div class="btn-row">
+        <button class="btn btn-ghost" id="generate-fatsat-pdf-btn">📄 Export Sign-off PDF</button>
+      </div>
+    </div>
+    <p class="hint-text">Track Factory and Site Acceptance Testing sign-offs for stakeholders.</p>
+    <div class="card" id="fatsat-container">
+        <!-- Rendered by app.js -->
+    </div>
+  </section>
+
+  <!-- NEW: SITE PUNCHLIST PANEL -->
+  <section class="tab-panel" id="panel-punchlist">
+    <div class="panel-header-row">
+      <h2 class="panel-title">Cross-Functional Site Punchlist</h2>
+      <div class="btn-row">
+        <button class="btn btn-primary" id="add-punchlist-btn">+ Log Site Snag</button>
+      </div>
+    </div>
+    <p class="hint-text">Track cross-functional site issues (Mechanical, Electrical, IT). Use the WhatsApp button to alert subcontractors instantly.</p>
+    <div id="punchlist-container" class="pl-form-grid">
+        <!-- Rendered by punchlist.js -->
+    </div>
+  </section>
+
 </main>
 
 <footer class="app-footer">
@@ -224,6 +285,8 @@
 <script src="scripts/export.js"></script>
 <script src="scripts/pdf-generator.js"></script>
 <script src="scripts/api.js"></script>
+<!-- NEW: Added punchlist script -->
+<script src="scripts/punchlist.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
