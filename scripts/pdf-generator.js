@@ -15,7 +15,6 @@ window.AGC.PDF = (() => {
     );
   }
 
-  // Enterprise/ERP-style currency formatting: ALWAYS exactly 2 decimal places
   function formatCurrency(value) {
     return Number(value || 0).toLocaleString(undefined, {
       minimumFractionDigits: 2,
@@ -23,31 +22,28 @@ window.AGC.PDF = (() => {
     });
   }
 
-  function generateCostEstimationPdf(estimateData, totals) {
-    if (!window.html2pdf) {
-      alert("PDF library is still loading. Please wait 2 seconds and try again.");
-      return;
+  // Ensures the Quotation Number stays the exact same between Preview and Download
+  function getDeterministicQuotationNo(id) {
+    if (!id) return `AGC-QT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = (hash << 5) - hash + id.charCodeAt(i);
+      hash |= 0;
     }
+    const shortHash = Math.abs(hash).toString().substring(0, 4).padStart(4, '0');
+    return `AGC-QT-${new Date().getFullYear()}-${shortHash}`;
+  }
 
-    estimateData = estimateData || {};
-    totals = totals || {
-      markupFactor: 1, sellingBoqTotal: 0, sellingEngCost: 0, totalHours: 0,
-      sellingSubtotal: 0, vatAmount: 0, grandTotal: 0
-    };
-
-    const randomNum = Math.floor(1000 + Math.random() * 9000);
-    const quotationNo = `AGC-QT-${new Date().getFullYear()}-${randomNum}`;
-    const revisionNo = estimateData.revision || "00"; // Added Revision Control
-    const filename = `AGC-Quotation-${quotationNo}-Rev${revisionNo}.pdf`;
+  // Generates the raw HTML document for both the Preview Modal and the Final PDF
+  function getQuotationHtml(estimateData, totals) {
+    const quotationNo = getDeterministicQuotationNo(estimateData.id);
+    const revisionNo = estimateData.revision || "00";
     const currentDate = new Date().toLocaleDateString("en-GB", {
       year: "numeric", month: "short", day: "numeric"
     });
     const currency = estimateData.currency || "AED";
-    
-    // Fetch the hidden markup multiplier calculated in app.js
     const markup = totals.markupFactor || 1;
 
-    // Build BOQ rows with markup baked directly into the line items
     const boqRows = (estimateData.boq || []).map((item, index) => {
       const sellingUnitCost = (item.unitCost || 0) * markup;
       const sellingTotal = (item.qty || 0) * sellingUnitCost;
@@ -71,7 +67,6 @@ window.AGC.PDF = (() => {
         </td>
       </tr>`;
 
-    // Engineering rows with markup baked into the hourly rates
     const p = estimateData.phases || {};
     const phasesList = [
       { name: "Design & Architecture",   hrs: p.design?.hours || 0,       rate: p.design?.rate || 320 },
@@ -100,8 +95,7 @@ window.AGC.PDF = (() => {
 
     const finalEngRows = hasEngineering ? engRows : `<tr><td colspan="4" style="padding:12px;border:1px solid #cbd5e1;text-align:center;color:#64748b;">No engineering services included.</td></tr>`;
 
-    // ========== Full HTML as a string ==========
-    const htmlContent = `
+    return `
       <div style="width:740px;padding:20px;font-family:Arial,Helvetica,sans-serif;color:#1e293b;background:#ffffff;font-size:10pt;line-height:1.4;">
         
         <!-- Header -->
@@ -236,12 +230,17 @@ window.AGC.PDF = (() => {
         </div>
       </div>
     `;
+  }
 
-    // 1. Create container
+  function generateCostEstimationPdf(estimateData, totals) {
+    const htmlContent = getQuotationHtml(estimateData, totals);
+    const quotationNo = getDeterministicQuotationNo(estimateData.id);
+    const revisionNo = estimateData.revision || "00";
+    const filename = `AGC-Quotation-${quotationNo}-Rev${revisionNo}.pdf`;
+
     const container = document.createElement("div");
     container.innerHTML = htmlContent;
     
-    // 2. ENTERPRISE UX FIX: Render strictly OFF-SCREEN to avoid UI flash
     container.style.position = "absolute";
     container.style.left = "-9999px";
     container.style.top = "-9999px";
@@ -249,10 +248,8 @@ window.AGC.PDF = (() => {
     container.style.background = "#ffffff";
     document.body.appendChild(container);
 
-    // Yield thread to allow DOM to paint the invisible element
     requestAnimationFrame(() => {
       const element = container.firstElementChild;
-
       const opt = {
         margin:       8,
         filename:     filename,
@@ -267,7 +264,6 @@ window.AGC.PDF = (() => {
         pagebreak:    { mode: ["avoid-all", "css"] }
       };
 
-      // 3. Generate PDF and use .finally() for guaranteed cleanup
       html2pdf()
         .set(opt)
         .from(element)
@@ -277,7 +273,6 @@ window.AGC.PDF = (() => {
           alert("Could not generate PDF. Please try again.");
         })
         .finally(() => {
-          // Guaranteed removal, preventing zombie DOM nodes
           if (container && document.body.contains(container)) {
             container.remove();
           }
@@ -286,6 +281,7 @@ window.AGC.PDF = (() => {
   }
 
   function generateRequirementsPdf(tableElement, options = {}) {
+    // Requirements PDF logic remains identical...
     if (!window.html2pdf) {
       alert("PDF library is still loading. Please wait.");
       return;
@@ -297,7 +293,7 @@ window.AGC.PDF = (() => {
     container.style.color = "#0f172a";
     container.style.padding = "20px";
     container.style.background = "#fff";
-    container.style.width = "1050px"; // landscape width
+    container.style.width = "1050px"; 
 
     const header = document.createElement("div");
     header.innerHTML = `
@@ -327,7 +323,6 @@ window.AGC.PDF = (() => {
       td.style.border = "1px solid #cbd5e1";
     });
 
-    // Strip out the Actions column for clean printing
     tableClone.querySelectorAll("tr").forEach(tr => {
       tr.style.pageBreakInside = "avoid";
       tr.style.breakInside = "avoid";
@@ -336,7 +331,6 @@ window.AGC.PDF = (() => {
 
     container.appendChild(tableClone);
     
-    // ENTERPRISE UX FIX: Render strictly OFF-SCREEN
     container.style.position = "absolute";
     container.style.left = "-9999px";
     container.style.top = "-9999px";
@@ -370,6 +364,7 @@ window.AGC.PDF = (() => {
   }
 
   return {
+    getQuotationHtml,
     generateCostEstimationPdf,
     generateRequirementsPdf
   };
