@@ -78,7 +78,6 @@ p { margin: 0; }
 }
 .brand-text h1 { font-size: 1.1rem; color: var(--white); }
 .brand-text p { font-size: 0.72rem; color: var(--slate-400); }
-
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .sync-status { font-size: 0.72rem; color: var(--green); white-space: nowrap; }
 .sync-status.offline { color: var(--amber); }
@@ -150,7 +149,6 @@ p { margin: 0; }
 .tab-panel { display: none; }
 .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
 .panel-title { font-size: 1.2rem; color: var(--white); margin-bottom: 14px; }
 .panel-header-row {
   display: flex; align-items: center; justify-content: space-between;
@@ -196,13 +194,19 @@ p { margin: 0; }
 }
 .card h3 { font-size: 0.95rem; margin-bottom: 10px; color: var(--electric-blue); }
 
-/* ---- Dashboard ---- */
+/* ---- Dashboard (CLS FIX) ---- */
+#panel-dashboard {
+  min-height: 480px; /* prevents layout jump */
+}
+
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 12px;
   margin-bottom: 18px;
+  min-height: 110px; /* reserves space for stats */
 }
+
 .stat-box {
   background: var(--slate-900);
   border: 1px solid var(--slate-800);
@@ -212,7 +216,14 @@ p { margin: 0; }
 }
 .stat-box .stat-value { font-size: 1.6rem; font-weight: 800; color: var(--white); }
 .stat-box .stat-label { font-size: 0.75rem; color: var(--slate-400); margin-top: 4px; }
-.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  min-height: 220px; /* reserves space for the three cards — fixes CLS */
+}
+
 .mini-list { display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem; }
 .mini-list .mini-row { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px solid var(--slate-800); padding-bottom: 6px; }
 .mini-list .muted { color: var(--slate-400); }
@@ -339,7 +350,7 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .modal-body { padding: 16px 18px; overflow-y: auto; }
 .modal-footer { padding: 14px 18px; border-top: 1px solid var(--slate-800); display: flex; justify-content: flex-end; gap: 10px; }
 
-/* ---- Footer ---- */
+/* ---- Footer (CONTRAST FIX) ---- */
 .app-footer {
   background: var(--slate-950);
   border-top: 1px solid var(--slate-800);
@@ -348,7 +359,10 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
   color: var(--slate-400);
   font-size: 0.75rem;
 }
-.footer-sub { margin-top: 4px; color: var(--slate-600); }
+.footer-sub {
+  margin-top: 4px;
+  color: #94a3b8; /* Fixed: now passes 4.5:1 contrast ratio */
+}
 
 /* ---- Dark scrollbar ---- */
 ::-webkit-scrollbar { height: 8px; width: 8px; }
@@ -376,7 +390,6 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
 .io-badge-internal { background: rgba(148, 163, 184, 0.15); color: #cbd5e1; }
 
 @media print {
-  /* Hide unnecessary UI elements, navigation, buttons, and tables */
   .app-header, 
   .tab-bar, 
   .app-footer, 
@@ -390,29 +403,24 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
     display: none !important; 
   }
   
-  /* Force clean white background and black text */
   body { 
     background: white !important; 
     color: black !important; 
     font-size: 11pt;
   }
   
-  /* Reset container layout for single-page print */
   main {
     padding: 0 !important;
     margin: 0 !important;
   }
-
   .tab-panel {
     display: block !important;
   }
-
   .est-layout {
     display: grid !important;
     grid-template-columns: 1fr 1.5fr !important;
     gap: 15px !important;
   }
-
   .card { 
     border: 1px solid #ddd !important; 
     box-shadow: none !important; 
@@ -421,8 +429,6 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
     margin-bottom: 10px !important;
     page-break-inside: avoid;
   }
-
-  /* Make inputs look like static quotation text */
   input, select {
     border: none !important;
     background: transparent !important;
