@@ -295,6 +295,14 @@ label { display: flex; flex-direction: column; gap: 4px; font-size: 0.78rem; col
   max-width: 250px;
   text-overflow: ellipsis;
 }
+/* Ensure table select dropdowns display selected values clearly */
+.data-table td select {
+  width: 100%;
+  min-width: 80px;
+  background-color: var(--slate-800);
+  color: var(--slate-100);
+  padding: 4px 6px;
+}
 
 .empty-state { color: var(--slate-400); font-size: 0.85rem; padding: 16px 0; text-align: center; }
 
