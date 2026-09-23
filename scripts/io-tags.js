@@ -29,8 +29,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // --- Enterprise Initialization ---
   // Safely wait for the global DB to be ready without brittle timeouts
+ // --- Enterprise Initialization ---
   async function initIo() {
-    if (!window.DB) {
+    if (typeof DB === "undefined") {
       console.error("Critical: Database module not loaded.");
       return;
     }
